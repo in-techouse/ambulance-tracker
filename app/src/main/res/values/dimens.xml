@@ -1,0 +1,67 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="image_header_dimen">100dp</dimen>
+    <dimen name="image_header_top_margin">50dp</dimen>
+    <dimen name="login_layout_padding">8dp</dimen>
+    <dimen name="login_layout_padding_top">36dp</dimen>
+    <dimen name="login_button_margin">16dp</dimen>
+    <dimen name="nav_header_vertical_spacing">8dp</dimen>
+    <dimen name="nav_header_height">220dp</dimen>
+    <dimen name="nav_header_height_1">250dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+
+
+    <dimen name="mp1">1dp</dimen>
+    <dimen name="mp3">3dp</dimen>
+    <dimen name="mp5">5dp</dimen>
+    <dimen name="mp7">7dp</dimen>
+    <dimen name="mp10">10dp</dimen>
+    <dimen name="mp12">12dp</dimen>
+    <dimen name="mp13">13dp</dimen>
+    <dimen name="mp16">16dp</dimen>
+    <dimen name="mp20">20dp</dimen>
+    <dimen name="mp25">25dp</dimen>
+    <dimen name="mp30">30dp</dimen>
+    <dimen name="mp32">32dp</dimen>
+    <dimen name="mp35">35dp</dimen>
+    <dimen name="mp40">40dp</dimen>
+    <dimen name="mp50">50dp</dimen>
+    <dimen name="mp60">60dp</dimen>
+    <dimen name="mp70">70dp</dimen>
+
+
+    <dimen name="textsixe11">11sp</dimen>
+    <dimen name="textsixe12">12sp</dimen>
+    <dimen name="textsixe13">13sp</dimen>
+    <dimen name="textsixe14">14sp</dimen>
+    <dimen name="textsixe15">15sp</dimen>
+    <dimen name="textsixe16">16sp</dimen>
+    <dimen name="textsixe17">17sp</dimen>
+    <dimen name="textsixe18">18sp</dimen>
+    <dimen name="textsixe19">19sp</dimen>
+    <dimen name="textsixe20">20sp</dimen>
+    <dimen name="textsixe21">21sp</dimen>
+    <dimen name="textsixe22">22sp</dimen>
+    <dimen name="textsixe23">23sp</dimen>
+    <dimen name="textsixe24">24sp</dimen>
+    <dimen name="textsixe25">25sp</dimen>
+    <dimen name="app_bar_height">280dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
+    <dimen name="dp_8">8dp</dimen>
+    <dimen name="dp_16">16dp</dimen>
+    <dimen name="dp_24">24dp</dimen>
+    <dimen name="dp_32">32dp</dimen>
+    <dimen name="dp_40">40dp</dimen>
+    <dimen name="dp_48">48dp</dimen>
+    <dimen name="dp_56">56dp</dimen>
+    <dimen name="dp_64">64dp</dimen>
+    <dimen name="dp_72">72dp</dimen>
+    <dimen name="dp_80">80dp</dimen>
+    <dimen name="dp_160">160dp</dimen>
+    <dimen name="md_bottom_sheet_separator_top_margin">7dp</dimen>
+
+
+
+</resources>
