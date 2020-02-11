@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".activities.UserProfile"
+    tools:showIn="@layout/activity_user_profile">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_margin="@dimen/mp12"
+        android:padding="@dimen/mp16">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/mp7"
+            android:layout_margin="@dimen/mp7">
+            <EditText
+                android:id="@+id/edtPhoneNo"
+                android:inputType="phone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimaryDark"
+                android:hint="@string/phone_no"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/mp7"
+            android:layout_margin="@dimen/mp7">
+            <EditText
+                android:id="@+id/edtFirstName"
+                android:inputType="textPersonName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimaryDark"
+                android:hint="@string/first_name"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/mp7"
+            android:layout_margin="@dimen/mp7">
+            <EditText
+                android:id="@+id/edtLastName"
+                android:inputType="textPersonName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimaryDark"
+                android:hint="@string/last_name"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/mp7"
+            android:layout_margin="@dimen/mp7">
+            <EditText
+                android:id="@+id/edtEmail"
+                android:inputType="textEmailAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorPrimaryDark"
+                android:hint="@string/email"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/userProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="@dimen/login_button_margin"
+            android:layout_marginRight="@dimen/login_button_margin"
+            android:layout_marginTop="@dimen/login_button_margin"
+            android:textColor="@color/colorWhite"
+            android:text="@string/save"/>
+
+        <ProgressBar
+            android:id="@+id/userProfileProgress"
+            android:visibility="gone"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/mp12"
+            android:layout_marginBottom="@dimen/mp12"
+            android:layout_width="@dimen/mp32"
+            android:layout_height="@dimen/mp32"/>
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

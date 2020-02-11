@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="kc.fyp.ambulance.tracker">
+
+    <uses-permission android:name="android.permission.ACCEPT_GPS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -12,7 +21,48 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".activities.LoginActivity"></activity>
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_key" />
+        <uses-library
+            android:name="org.apache.http.legacy"
+            android:required="false" />
+
+        <activity
+            android:name=".activities.OTPVerification"
+            android:parentActivityName=".activities.LoginActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity
+            android:windowSoftInputMode="stateAlwaysHidden"
+            android:name=".activities.AmbulanceDashboard"
+            android:label="@string/title_activity_ambulance_dashboard"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:windowSoftInputMode="stateAlwaysHidden"
+            android:name=".activities.Dashboard"
+            android:label="@string/title_activity_dashboard"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activities.NotificationsActivity"
+            android:parentActivityName=".activities.Dashboard"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity
+            android:name=".activities.BookingsActivity"
+            android:parentActivityName=".activities.Dashboard"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity
+            android:name=".activities.EditUserProfile"
+            android:label="@string/title_activity_edit_user_profile"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".activities.Dashboard"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity
+            android:windowSoftInputMode="stateAlwaysHidden"
+            android:name=".activities.UserProfile"
+            android:label="@string/title_activity_user_profile"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".activities.LoginActivity" android:windowSoftInputMode="stateAlwaysHidden"/>
         <activity
             android:name=".activities.SplashActivity"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">

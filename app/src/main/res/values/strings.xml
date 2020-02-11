@@ -1,3 +1,39 @@
 <resources>
     <string name="app_name">Ambulance Tracker</string>
+    <string name="title_activity_user_profile">UserProfile</string>
+    <string name="phone_no">Phone Number</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_edit_user_profile">Edit Profile</string>
+    <string name="title_activity_dashboard">Dashboard</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_tools">Tools</string>
+    <string name="menu_share">Share</string>
+    <string name="menu_send">Send</string>
+    <string name="title_activity_ambulance_dashboard">AmbulanceDashboard</string>
+    <string name="action_login">LOGIN</string>
+    <string name="resend_otp">RESENT OTP CODE</string>
+    <string name="verify">VERIFY</string>
+    <string name="enter_the_otp_code_you_received">Enter the OTP code you received</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="email">Email</string>
+    <string name="save">SAVE</string>
+    <string name="log_out">Logout</string>
+    <string name="user_profile">Profile</string>
+    <string name="notification">Notifications</string>
+    <string name="booking">Bookings</string>
+    <string name="connecting_you_to_nearby_ambulances">Connecting you to near by ambulances</string>
+    <string name="confirm">CONFIRM</string>
+    <string name="loading_bookings">Loading Bookings</string>
+    <string name="no_bookings_found">No previous booking found</string>
+    <string name="loading_notifications">Loading Notifications</string>
+    <string name="no_notifications_found">No notification found.</string>
 </resources>

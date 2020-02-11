@@ -1,12 +1,14 @@
 package kc.fyp.ambulance.tracker.activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-
 import kc.fyp.ambulance.tracker.R;
+import kc.fyp.ambulance.tracker.director.Session;
+import kc.fyp.ambulance.tracker.model.User;
 
 public class SplashActivity extends Activity {
     private boolean isFirstAnimation = false;
@@ -32,21 +34,21 @@ public class SplashActivity extends Activity {
             public void onAnimationEnd(Animation animation) {
                 if (!isFirstAnimation) {
                     imageView.clearAnimation();
-//                    Session session = new Session(SplashActivity.this);
-//                    User user = session.getUser();
-//                    if (user == null) {
-//                        Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
-//                        startActivity(intent);
-//                    } else {
-//                        if (user.getRoll() == 0) {
-//                            Intent intent = new Intent(SplashActivity.this, Dashboard.class);
-//                            startActivity(intent);
-//                        } else {
-//                            Intent intent = new Intent(SplashActivity.this, ProviderDashboard.class);
-//                            startActivity(intent);
-//                        }
-//                        finish();
-//                    }
+                    Session session = new Session(SplashActivity.this);
+                    User user = session.getUser();
+                    if (user == null) {
+                        Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
+                        startActivity(intent);
+                    } else {
+                        if (user.getType() == 0) {
+                            Intent intent = new Intent(SplashActivity.this, Dashboard.class);
+                            startActivity(intent);
+                        } else {
+                            Intent intent = new Intent(SplashActivity.this, AmbulanceDashboard.class);
+                            startActivity(intent);
+                        }
+                    }
+                    finish();
                     isFirstAnimation = true;
                 }
             }

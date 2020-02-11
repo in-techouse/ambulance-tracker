@@ -12,14 +12,14 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:background="@color/colorWhite">
 
-    <de.hdodenhof.circleimageview.CircleImageView
+    <ImageView
+        android:scaleType="fitCenter"
         android:id="@+id/header_icon"
-        android:layout_width="@dimen/image_header_dimen"
-        android:layout_height="@dimen/image_header_dimen"
-        android:src="@drawable/abmulance_logo"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:src="@drawable/ambulance_logo"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/image_header_top_margin"
-        app:civ_border_width="2dp"
-        app:civ_border_color="@color/colorPrimaryDark"/>
+        android:layout_marginTop="@dimen/image_header_top_margin" />
+
 
 </RelativeLayout>
