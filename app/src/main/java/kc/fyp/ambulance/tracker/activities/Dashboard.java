@@ -11,6 +11,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
@@ -20,7 +21,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,6 +32,7 @@ import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+
 import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -49,17 +53,23 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
 import de.hdodenhof.circleimageview.CircleImageView;
 import kc.fyp.ambulance.tracker.R;
 import kc.fyp.ambulance.tracker.director.Constants;
 import kc.fyp.ambulance.tracker.director.Helpers;
 import kc.fyp.ambulance.tracker.director.Session;
-import kc.fyp.ambulance.tracker.model.Booking;
+import kc.fyp.ambulance.tracker.model.Case;
 import kc.fyp.ambulance.tracker.model.User;
 
 public class Dashboard extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
@@ -70,33 +80,29 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
     };
-    private List<User> users;
     private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference().child("Users");
-    private DatabaseReference bookingReference = FirebaseDatabase.getInstance().getReference().child("Bookings");
-    private ValueEventListener providerValueListener;
+    private DatabaseReference bookingReference = FirebaseDatabase.getInstance().getReference().child("Cases");
+    private ValueEventListener providerValueListener, bookingValueListener, bookingsValueListener, providerDetailValueListener;
     private MapView map;
     private Helpers helpers;
     private Session session;
     private GoogleMap googleMap;
     private DrawerLayout drawer;
-    private NavigationView navigationView;
     private User user;
-    private CircleImageView profile_image;
     private ImageView providerImage;
-    private TextView profile_name, profile_email, profile_phone , providerName , providerCategory , bookingAddress , bookingDate;
+    private TextView providerName, providerCategory, providerPhone, bookingAddress, bookingDate;
     private FusedLocationProviderClient locationProviderClient;
-    private Marker marker;
+    private Marker marker, activeProviderMarker;
     private TextView locationAddress;
-    private Button confirm, cancelBooking;
-    private LinearLayout searching;
-    private CardView confromCard;
+    private LinearLayout searching, caseLayout;
+    private CardView confirmCard;
     private ProgressBar sheetProgress;
     private RelativeLayout mainSheet;
-    private Booking activeBooking;
+    private Case activeBooking;
     private User activeProvider;
-    private DatabaseReference notificationRefrence = FirebaseDatabase.getInstance().getReference().child("Notifications");
-    private LinearLayout layoutBottomSheet;
     private BottomSheetBehavior sheetBehavior;
+    private Spinner caseType;
+    private CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +111,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        layoutBottomSheet = findViewById(R.id.bottom_sheet);
+        LinearLayout layoutBottomSheet = findViewById(R.id.bottom_sheet);
         sheetBehavior = BottomSheetBehavior.from(layoutBottomSheet);
         sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         sheetProgress = findViewById(R.id.sheetProgress);
@@ -115,23 +121,25 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         providerCategory = findViewById(R.id.providerCategory);
         bookingAddress = findViewById(R.id.bookingAddress);
         bookingDate = findViewById(R.id.bookingDate);
-        cancelBooking = findViewById(R.id.cancelBooking);
+        Button cancelBooking = findViewById(R.id.cancelBooking);
+        caseType = findViewById(R.id.caseType);
+        caseLayout = findViewById(R.id.caseLayout);
         cancelBooking.setOnClickListener(this);
 
 
         drawer = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-        users = new ArrayList<>();
+        List<User> users = new ArrayList<>();
 
 
-        confirm = findViewById(R.id.confirm);
+        Button confirm = findViewById(R.id.confirm);
         confirm.setOnClickListener(this);
         searching = findViewById(R.id.searching);
-        confromCard = findViewById(R.id.conformCard);
+        confirmCard = findViewById(R.id.confirmCard);
         session = new Session(Dashboard.this);
         user = session.getUser();
         helpers = new Helpers();
@@ -139,16 +147,16 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
 
 
         View header = navigationView.getHeaderView(0);
-        profile_email = header.findViewById(R.id.profile_email);
-        profile_name = header.findViewById(R.id.profile_name);
-        profile_image = header.findViewById(R.id.profile_image);
-        profile_phone = header.findViewById(R.id.profile_phone);
+        TextView profile_email = header.findViewById(R.id.profile_email);
+        TextView profile_name = header.findViewById(R.id.profile_name);
+        CircleImageView profile_image = header.findViewById(R.id.profile_image);
+        TextView profile_phone = header.findViewById(R.id.profile_phone);
 
         String name = user.getFirstName() + " " + user.getLastName();
         profile_name.setText(name);
         profile_email.setText(user.getEmail());
         profile_phone.setText(user.getPhone());
-        if(user.getImage() != null && user.getImage().length() > 0){
+        if (user.getImage() != null && user.getImage().length() > 0) {
             Glide.with(Dashboard.this).load(user.getImage()).into(profile_image);
         }
 
@@ -186,10 +194,9 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
 
     public void enableLocation() {
         boolean flag = hasPermissions(Dashboard.this, PERMISSIONS);
-        if(!flag){
+        if (!flag) {
             ActivityCompat.requestPermissions(Dashboard.this, PERMISSIONS, 1);
-        }
-        else{
+        } else {
             googleMap.setMyLocationEnabled(true);
             googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
                 @Override
@@ -204,8 +211,8 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                 }
             });
             getDeviceLocation();
-//            getOnProviders();
-//            listenToNotifications();
+            getAllAmbulances();
+            listenToBookingsChanges();
         }
     }
 
@@ -297,14 +304,14 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode == 1){
+        if (requestCode == 1) {
             enableLocation();
         }
     }
 
-    private boolean hasPermissions(Context c, String... permission){
-        for(String p : permission){
-            if(ActivityCompat.checkSelfPermission(c, p) != PackageManager.PERMISSION_GRANTED){
+    private boolean hasPermissions(Context c, String... permission) {
+        for (String p : permission) {
+            if (ActivityCompat.checkSelfPermission(c, p) != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
         }
@@ -314,14 +321,268 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        switch (id){
-            case R.id.confirm:{
+        switch (id) {
+            case R.id.confirm: {
+                if (!helpers.isConnected(Dashboard.this)) {
+                    helpers.showNoInternetError(Dashboard.this);
+                    return;
+                }
+                if (caseType.getSelectedItemPosition() == 0) {
+                    helpers.showError(Dashboard.this, "Select your case type first.");
+                    return;
+                }
+                postCase();
                 break;
             }
-            case R.id.cancelBooking:{
+            case R.id.cancelBooking: {
                 break;
             }
         }
+    }
+
+    private void postCase() {
+        searching.setVisibility(View.VISIBLE);
+        caseLayout.setVisibility(View.GONE);
+        DatabaseReference bookingReference = FirebaseDatabase.getInstance().getReference().child("Cases");
+        String key = bookingReference.push().getKey();
+        activeBooking = new Case();
+        activeBooking.setId(key);
+        activeBooking.setUserId(user.getPhone());
+        Date d = new Date();
+        String date = new SimpleDateFormat("EEE dd, MMM, yyyy HH:mm").format(d);
+        activeBooking.setDate(date);
+        activeBooking.setLatitude(marker.getPosition().latitude);
+        activeBooking.setLongitude(marker.getPosition().longitude);
+        activeBooking.setStatus("New");
+        activeBooking.setType(caseType.getSelectedItem().toString());
+        activeBooking.setDriverId("");
+        activeBooking.setAmountCharged(0);
+        activeBooking.setAddress(locationAddress.getText().toString());
+        bookingReference.child(activeBooking.getId()).setValue(activeBooking).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                startTimer();
+                listenToBookingChanges();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                searching.setVisibility(View.GONE);
+                caseLayout.setVisibility(View.VISIBLE);
+                helpers.showError(Dashboard.this, Constants.ERROR_SOMETHING_WENT_WRONG);
+            }
+        });
+    }
+
+    private void startTimer() {
+        timer = new CountDownTimer(30000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                Log.e("Dashboard", "Time is ticking, booking status: " + activeBooking.getStatus());
+            }
+
+            @Override
+            public void onFinish() {
+                Log.e("Dashboard", "Time is finished, booking status: " + activeBooking.getStatus());
+                if (activeBooking.getStatus().equals("New")) {
+                    markBookingReject();
+                } else if (activeBooking.getStatus().equals("In Progress")) {
+                    onBookingInProgress();
+                }
+            }
+        };
+        timer.start();
+    }
+
+    private void markBookingReject() {
+        activeBooking.setStatus("Rejected");
+        DatabaseReference bookingReference = FirebaseDatabase.getInstance().getReference().child("Cases");
+        bookingReference.child(activeBooking.getId()).setValue(activeBooking);
+        searching.setVisibility(View.GONE);
+        caseLayout.setVisibility(View.VISIBLE);
+        helpers.showError(Dashboard.this, "No ambulance available currently.\nPlease try again later.");
+        activeBooking = null;
+    }
+
+    private void getAllAmbulances() {
+        providerValueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                googleMap.clear();
+                if (marker != null) {
+                    marker = googleMap.addMarker(new MarkerOptions().position(marker.getPosition()).title("You're Here")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 11));
+                }
+                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    User u = data.getValue(User.class);
+                    if (u != null) {
+                        LatLng user_location = new LatLng(u.getLatitude(), u.getLongitude());
+                        MarkerOptions markerOptions = new MarkerOptions().position(user_location).title(u.getFirstName());
+                        markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ambulance_64));
+                        Marker marker = googleMap.addMarker(markerOptions);
+                        marker.showInfoWindow();
+                        marker.setTag(u);
+                        Log.e("Dashboard", "Name: " + u.getFirstName() + " Lat: " + u.getLatitude() + " Lng: " + u.getLongitude());
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        };
+        userReference.orderByChild("type").equalTo(1).addValueEventListener(providerValueListener);
+    }
+
+    private void listenToBookingsChanges() {
+        bookingsValueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                bookingReference.removeEventListener(bookingsValueListener);
+                Log.e("Dashboard", "Bookings Value Event Listener");
+                if (activeBooking == null) {
+                    for (DataSnapshot d : dataSnapshot.getChildren()) {
+                        Case userCase = d.getValue(Case.class);
+                        if (userCase != null) {
+                            Log.e("Dashboard", "Cases Value Event Listener, Case found with status: " + userCase.getStatus());
+                            if (userCase.getStatus().equals("In Progress")) {
+                                activeBooking = userCase;
+                                listenToBookingChanges();
+                                onBookingInProgress();
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                bookingReference.removeEventListener(bookingsValueListener);
+            }
+        };
+
+        bookingReference.orderByChild("userId").equalTo(user.getPhone()).addValueEventListener(bookingsValueListener);
+    }
+
+    private void listenToBookingChanges() {
+        bookingValueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.e("Dashboard", "Booking Value Listener");
+                Case userCase = dataSnapshot.getValue(Case.class);
+                if (userCase != null) {
+                    activeBooking = userCase;
+                    switch (activeBooking.getStatus()) {
+                        case "In Progress":
+                            onBookingInProgress();
+                            break;
+                        case "Cancelled":
+                            onBookingCancelled();
+                            break;
+                        case "Completed":
+                            onBookingCompleted();
+                            break;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        };
+
+        bookingValueListener = bookingReference.child(activeBooking.getId()).addValueEventListener(bookingValueListener);
+    }
+
+
+    private void onBookingInProgress() {
+        if (timer != null) {
+            timer.cancel();
+        }
+        googleMap.clear();
+        marker = googleMap.addMarker(new MarkerOptions().position(marker.getPosition()).title("You're Here")
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 11));
+        if (providerValueListener != null) {
+            userReference.removeEventListener(providerValueListener);
+            Log.e("Dashboard", "Provider value event listener removed");
+        }
+        searching.setVisibility(View.GONE);
+        caseLayout.setVisibility(View.VISIBLE);
+        confirmCard.setVisibility(View.GONE);
+        sheetBehavior.setHideable(false);
+        sheetBehavior.setPeekHeight(220);
+        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        sheetProgress.setVisibility(View.VISIBLE);
+        mainSheet.setVisibility(View.GONE);
+
+        providerDetailValueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                sheetProgress.setVisibility(View.GONE);
+                mainSheet.setVisibility(View.VISIBLE);
+                userReference.removeEventListener(providerDetailValueListener);
+                Log.e("Dashboard", "Provider value event listener called SnapShot: " + dataSnapshot.toString());
+                activeProvider = dataSnapshot.getValue(User.class);
+                if (activeProvider != null) {
+                    if (activeProvider.getImage() != null && activeProvider.getImage().length() > 0) {
+                        Glide.with(Dashboard.this).load(activeProvider.getImage()).into(providerImage);
+                    }
+                    providerName.setText(activeProvider.getFirstName() + " " + activeProvider.getLastName());
+                    providerPhone.setText(activeProvider.getPhone());
+                    providerCategory.setText(activeProvider.getType());
+                    bookingDate.setText(activeBooking.getDate());
+                    bookingAddress.setText(activeBooking.getAddress());
+                    if (activeProviderMarker != null) {
+                        activeProviderMarker.remove();
+                    }
+                    LatLng latLng = new LatLng(activeProvider.getLatitude(), activeProvider.getLongitude());
+                    MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(activeProvider.getFirstName());
+                    markerOptions.icon(BitmapDescriptorFactory.fromResource(R.drawable.ambulance_64));
+                    activeProviderMarker = googleMap.addMarker(markerOptions);
+                    activeProviderMarker.showInfoWindow();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                userReference.removeEventListener(providerDetailValueListener);
+                Log.e("Dashboard", "Provider value event listener called");
+                sheetProgress.setVisibility(View.GONE);
+                mainSheet.setVisibility(View.VISIBLE);
+            }
+        };
+
+        userReference.child(activeBooking.getDriverId()).addValueEventListener(providerDetailValueListener);
+    }
+
+    private void forBothCancelledAndCompleted() {
+        if (providerDetailValueListener != null) {
+            userReference.removeEventListener(providerValueListener);
+        }
+        if (bookingValueListener != null) {
+            bookingReference.removeEventListener(bookingValueListener);
+        }
+        if (activeProviderMarker != null) {
+            activeProviderMarker.remove();
+        }
+        sheetProgress.setVisibility(View.GONE);
+        mainSheet.setVisibility(View.VISIBLE);
+        sheetBehavior.setHideable(true);
+        sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        confirmCard.setVisibility(View.VISIBLE);
+        listenToBookingsChanges();
+        getAllAmbulances();
+    }
+
+    private void onBookingCancelled() {
+        forBothCancelledAndCompleted();
+    }
+
+
+    private void onBookingCompleted() {
+        forBothCancelledAndCompleted();
     }
 
     @Override
@@ -333,7 +594,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                 break;
             }
             case R.id.nav_booking: {
-                Intent it = new Intent(Dashboard.this, BookingsActivity.class);
+                Intent it = new Intent(Dashboard.this, CasesActivity.class);
                 startActivity(it);
                 break;
             }

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottom_sheet"
+    android:layout_width="match_parent"
+    android:layout_height="330dp"
+    android:background="#fff"
+    android:orientation="vertical"
+    app:behavior_hideable="true"
+    app:behavior_peekHeight="38dp"
+    app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="7dp">
+
+        <ProgressBar
+            android:id="@+id/sheetProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+        <RelativeLayout
+            android:id="@+id/mainSheet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/providerImage"
+                android:layout_width="94dp"
+                android:layout_height="94dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:src="@drawable/user"
+                app:civ_border_color="#FF000000"
+                app:civ_border_width="2dp" />
+
+            <TextView
+                android:id="@+id/providerName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@+id/providerImage"
+                android:text="Order Details"
+                android:textColor="#444"
+                android:textSize="18dp"
+                android:textStyle="bold" />
+
+            <RelativeLayout
+                android:id="@+id/callMe"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:layout_marginStart="10dp"
+                android:layout_below="@id/providerName"
+                android:layout_toEndOf="@id/providerImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/providerPhone"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="1234567890"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+                <ImageView
+                    android:layout_marginStart="13dp"
+                    android:layout_toEndOf="@id/providerPhone"
+                    android:src="@drawable/call"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"/>
+            </RelativeLayout>
+
+            <TextView
+                android:id="@+id/bookingDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/providerImage"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="10dp"
+                android:layout_toEndOf="@+id/providerImage"
+                android:text="Booking Date"
+                android:textColor="#444"
+                android:textSize="13dp" />
+
+
+            <TextView
+                android:id="@+id/bookingAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/bookingDate"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="10dp"
+                android:layout_toEndOf="@+id/bookingDate"
+                android:text="Booking Address"
+                android:textColor="#444"
+                android:textSize="13dp" />
+
+
+            <Button
+                android:id="@+id/cancelBooking"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/bookingAddress"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="@android:color/holo_red_light"
+                android:foreground="?attr/selectableItemBackground"
+                android:text="Cancel"
+                android:textColor="#fff" />
+
+
+            <Button
+                android:id="@+id/mark_complete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/cancelBooking"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="5dp"
+                android:backgroundTint="@android:color/holo_green_dark"
+                android:foreground="?attr/selectableItemBackground"
+                android:text="Marked Complete"
+                android:textColor="#fff" />
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/amountLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/mp10"
+            android:layout_marginEnd="@dimen/mp10"
+            android:orientation="vertical">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/mp10"
+                android:padding="@dimen/mp10">
+
+                <EditText
+                    android:id="@+id/totalCharge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Total Amount charged from the user?"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <Button
+                android:id="@+id/amountSubmit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/mp10"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="@dimen/mp10"
+                android:layout_marginBottom="5dp"
+                android:backgroundTint="@android:color/holo_green_dark"
+                android:foreground="?attr/selectableItemBackground"
+                android:text="SUBMIT"
+                android:textColor="#fff" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

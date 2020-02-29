@@ -12,7 +12,7 @@
         <item
             android:id="@+id/nav_booking"
             android:icon="@drawable/bookingicon"
-            android:title="@string/booking"/>
+            android:title="@string/cases"/>
         <item
             android:id="@+id/nav_notification"
             android:icon="@drawable/notificationicon"

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="kc.fyp.ambulance.tracker">
 
@@ -32,37 +31,39 @@
         <activity
             android:name=".activities.OTPVerification"
             android:parentActivityName=".activities.LoginActivity"
-            android:windowSoftInputMode="stateAlwaysHidden"/>
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:windowSoftInputMode="stateAlwaysHidden"
             android:name=".activities.AmbulanceDashboard"
             android:label="@string/title_activity_ambulance_dashboard"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:windowSoftInputMode="stateAlwaysHidden"
             android:name=".activities.Dashboard"
             android:label="@string/title_activity_dashboard"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activities.NotificationsActivity"
             android:parentActivityName=".activities.Dashboard"
-            android:windowSoftInputMode="stateAlwaysHidden"/>
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:name=".activities.BookingsActivity"
+            android:name=".activities.CasesActivity"
             android:parentActivityName=".activities.Dashboard"
-            android:windowSoftInputMode="stateAlwaysHidden"/>
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activities.EditUserProfile"
             android:label="@string/title_activity_edit_user_profile"
-            android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".activities.Dashboard"
-            android:windowSoftInputMode="stateAlwaysHidden"/>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
-            android:windowSoftInputMode="stateAlwaysHidden"
             android:name=".activities.UserProfile"
             android:label="@string/title_activity_user_profile"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".activities.LoginActivity" android:windowSoftInputMode="stateAlwaysHidden"/>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".activities.LoginActivity"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".activities.SplashActivity"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">

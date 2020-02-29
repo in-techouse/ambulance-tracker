@@ -22,7 +22,7 @@
         android:background="@color/colorWhite"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="20dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
         app:cardElevation="20dp"
@@ -51,12 +51,12 @@
 
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/conformCard"
+        android:id="@+id/confirmCard"
         android:layout_alignParentBottom="true"
         android:background="@color/colorWhite"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="20dp"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
         app:cardElevation="20dp"
@@ -79,7 +79,6 @@
                     android:layout_margin="@dimen/mp5"
                     android:textAlignment="center"
                     android:text="@string/connecting_you_to_nearby_ambulances"
-                    android:textStyle="bold"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"/>
                 <ProgressBar
@@ -88,13 +87,28 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"/>
             </LinearLayout>
-            <Button
+            <LinearLayout
+                android:id="@+id/caseLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/confirm"
-                android:background="@color/colorPrimary"
-                android:textColor="@color/colorWhite"
-                android:id="@+id/confirm"/>
+                android:orientation="vertical">
+                <Spinner
+                    android:id="@+id/caseType"
+                    android:layout_marginTop="7dp"
+                    android:entries="@array/caseType"
+                    android:paddingTop="11dp"
+                    android:paddingBottom="11dp"
+                    android:layout_marginBottom="7dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/confirm"
+                    android:background="@color/colorPrimary"
+                    android:textColor="@color/colorWhite"
+                    android:id="@+id/confirm"/>
+            </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 </RelativeLayout>

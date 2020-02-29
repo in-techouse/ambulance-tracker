@@ -29,11 +29,17 @@
     <string name="log_out">Logout</string>
     <string name="user_profile">Profile</string>
     <string name="notification">Notifications</string>
-    <string name="booking">Bookings</string>
-    <string name="connecting_you_to_nearby_ambulances">Connecting you to near by ambulances</string>
+    <string name="booking">Cases</string>
+    <string name="connecting_you_to_nearby_ambulances">Hold on please.\nConnecting you to near by\n<b>ambulances...</b></string>
     <string name="confirm">CONFIRM</string>
-    <string name="loading_bookings">Loading Bookings</string>
-    <string name="no_bookings_found">No previous booking found</string>
+    <string name="loading_bookings">Loading Cases</string>
+    <string name="no_bookings_found">No previous case found</string>
     <string name="loading_notifications">Loading Notifications</string>
     <string name="no_notifications_found">No notification found.</string>
+    <string name="cases">Cases</string>
+    <string-array name="caseType">
+        <item>Select case type</item>
+        <item>Emergency</item>
+        <item>Normal</item>
+    </string-array>
 </resources>

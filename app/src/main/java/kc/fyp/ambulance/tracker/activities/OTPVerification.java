@@ -1,7 +1,5 @@
 package kc.fyp.ambulance.tracker.activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -11,6 +9,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.chaos.view.PinView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -24,14 +26,17 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
 import java.util.concurrent.TimeUnit;
+
 import kc.fyp.ambulance.tracker.R;
 import kc.fyp.ambulance.tracker.director.Constants;
 import kc.fyp.ambulance.tracker.director.Helpers;
 import kc.fyp.ambulance.tracker.director.Session;
+import kc.fyp.ambulance.tracker.model.Ambulance;
 import kc.fyp.ambulance.tracker.model.User;
 
-public class OTPVerification extends AppCompatActivity implements View.OnClickListener{
+public class OTPVerification extends AppCompatActivity implements View.OnClickListener {
     private Helpers helpers;
     private Button btnVerify;
     private PinView firstPinView;
@@ -39,8 +44,10 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
     private String verificationId;
     private PhoneAuthProvider.ForceResendingToken resendToken;
     private TextView timer, resend;
-    private PhoneAuthCredential credential;
     private String strPhoneNo;
+    private DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+    private Session session;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,19 +55,19 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
 
         helpers = new Helpers();
         Intent it = getIntent();
-        if(it == null){
+        if (it == null) {
             finish();
             return;
         }
         Bundle bundle = it.getExtras();
-        if(bundle == null){
+        if (bundle == null) {
             finish();
             return;
         }
 
         // For primitive data type
         strPhoneNo = bundle.getString("phone");
-        if(strPhoneNo == null){
+        if (strPhoneNo == null) {
             finish();
             return;
         }
@@ -68,7 +75,7 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
         verificationId = bundle.getString("verificationId");
         // For non-primitive data type
         resendToken = bundle.getParcelable("resendToken");
-        credential = bundle.getParcelable("phoneAuthCredential");
+        PhoneAuthCredential credential = bundle.getParcelable("phoneAuthCredential");
 
 
         btnVerify = findViewById(R.id.btnverify);
@@ -80,13 +87,14 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
         btnVerify.setOnClickListener(this);
         resend.setOnClickListener(this);
         startTimer();
-        if(credential == null){
+        if (credential == null) {
             Log.e("OTP", "Credential Null");
-        }
-        else{
+        } else {
             Log.e("OTP", "Credential Not Null");
             addUserToFirebase(credential);
         }
+
+        session = new Session(getApplicationContext());
     }
 
     private void startTimer() {
@@ -98,10 +106,9 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
                 long seconds = millisUntilFinished % 60;
                 long minutes = (millisUntilFinished / 60) % 60;
                 String time = "";
-                if(seconds > 9){
+                if (seconds > 9) {
                     time = "0" + minutes + ":" + seconds;
-                }
-                else{
+                } else {
                     time = "0" + minutes + ":" + "0" + seconds;
                 }
                 timer.setText(time);
@@ -134,21 +141,20 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        switch (id){
-            case R.id.btnverify:{
+        switch (id) {
+            case R.id.btnverify: {
                 boolean flag = helpers.isConnected(this);
-                if (!flag){
+                if (!flag) {
                     helpers.showNoInternetError(OTPVerification.this);
                     return;
                 }
-                if(firstPinView == null || firstPinView.getText() == null){
+                if (firstPinView == null || firstPinView.getText() == null) {
                     return;
                 }
                 String otp = firstPinView.getText().toString();
-                if(otp.length() != 6){
+                if (otp.length() != 6) {
                     firstPinView.setError(Constants.ERROR_INVALID_OTP);
-                }
-                else{
+                } else {
                     firstPinView.setError(null);
                     PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, otp);
                     addUserToFirebase(credential);
@@ -156,7 +162,7 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
 
                 break;
             }
-            case R.id.resend:{
+            case R.id.resend: {
                 verifyProgress.setVisibility(View.VISIBLE);
                 resend.setVisibility(View.GONE);
                 Log.e("OTP", "Verification Id: " + verificationId);
@@ -195,7 +201,7 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-    private void addUserToFirebase(PhoneAuthCredential credential){
+    private void addUserToFirebase(PhoneAuthCredential credential) {
         verifyProgress.setVisibility(View.VISIBLE);
         btnVerify.setVisibility(View.GONE);
         FirebaseAuth auth = FirebaseAuth.getInstance();
@@ -217,16 +223,15 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
     }
 
 
-    private void checkUser(){
-        FirebaseDatabase db = FirebaseDatabase.getInstance();
-        final DatabaseReference reference = db.getReference().child("Users").child(strPhoneNo);
-        reference.addValueEventListener(new ValueEventListener() {
+    private void checkUser() {
+
+        reference.child("Users").child(strPhoneNo).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                reference.removeEventListener(this);
-                verifyProgress.setVisibility(View.GONE);
-                btnVerify.setVisibility(View.VISIBLE);
-                if(dataSnapshot.getValue() == null){
+                if (dataSnapshot.getValue() == null) {
+                    reference.removeEventListener(this);
+                    verifyProgress.setVisibility(View.GONE);
+                    btnVerify.setVisibility(View.VISIBLE);
                     Intent intent = new Intent(OTPVerification.this, UserProfile.class);
                     Bundle bundle = new Bundle();
                     bundle.putString("phone", strPhoneNo);
@@ -234,27 +239,66 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
-                }
-                else{
+                } else {
                     User user = dataSnapshot.getValue(User.class);
-                    Session session = new Session(OTPVerification.this);
                     session.setSession(user);
-                    if(user == null){
-                        Intent intent = new Intent(OTPVerification.this, LoginActivity.class);
+                    if (user == null) {
+                        reference.removeEventListener(this);
+                        verifyProgress.setVisibility(View.GONE);
+                        btnVerify.setVisibility(View.VISIBLE);
+                        Intent intent = new Intent(OTPVerification.this, UserProfile.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putString("phone", strPhoneNo);
+                        intent.putExtras(bundle);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
-                    }
-                    else if (user.getType() == 0) {
+                        finish();
+                    } else if (user.getType() == 0) {
+                        reference.removeEventListener(this);
+                        verifyProgress.setVisibility(View.GONE);
+                        btnVerify.setVisibility(View.VISIBLE);
                         Intent intent = new Intent(OTPVerification.this, Dashboard.class);
                         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
+                        finish();
                     } else {
-                        Intent intent = new Intent(OTPVerification.this, AmbulanceDashboard.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
+                        getAmbulanceDetail();
                     }
-                    finish();
                 }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                reference.removeEventListener(this);
+                verifyProgress.setVisibility(View.GONE);
+                btnVerify.setVisibility(View.VISIBLE);
+                helpers.showError(OTPVerification.this, Constants.ERROR_SOMETHING_WENT_WRONG);
+            }
+        });
+    }
+
+    private void getAmbulanceDetail() {
+        reference.child("Ambulances").orderByChild("driverId").equalTo(strPhoneNo).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                reference.removeEventListener(this);
+                verifyProgress.setVisibility(View.GONE);
+                btnVerify.setVisibility(View.VISIBLE);
+                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    Ambulance ambulance = data.getValue(Ambulance.class);
+                    Log.e("OTP", "Ambulance Data Snapshot: " + dataSnapshot.toString());
+                    if (ambulance != null) {
+                        Log.e("OTP", "Ambulance is not null");
+                        Log.e("OTP", "Ambulance Registration: " + ambulance.getRegistrationNumber());
+                        Log.e("OTP", "Ambulance Model: " + ambulance.getAmbulanceModel());
+                        Log.e("OTP", "Ambulance Driver: " + ambulance.getDriverId());
+                        session.setAmbulance(ambulance);
+                    }
+                }
+                Intent intent = new Intent(OTPVerification.this, AmbulanceDashboard.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
             }
 
             @Override

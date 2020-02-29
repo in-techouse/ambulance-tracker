@@ -6,4 +6,6 @@
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorReject">#DA2B2B</color>
     <color name="colorAccept">#377A08</color>
+    <color name="colorTextWhite">#FFFFFF</color>
+    <color name="lightGray">#E0E0E0</color>
 </resources>

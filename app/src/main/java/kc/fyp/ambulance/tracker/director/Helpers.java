@@ -13,12 +13,12 @@ public class Helpers {
 
     public boolean isConnected(Context context) {
         boolean connected = false;
-        ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         connected = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED || connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED;
-        return  connected;
+        return connected;
     }
 
-    public void showNoInternetError(Activity activity){
+    public void showNoInternetError(Activity activity) {
         final MaterialDialog dialog = new MaterialDialog.Builder(activity)
                 .setTitle(Constants.ERROR)
                 .setMessage(Constants.ERROR_NO_INTERNET)
@@ -40,7 +40,7 @@ public class Helpers {
         dialog.show();
     }
 
-    public void showError(Activity activity, String message){
+    public void showError(Activity activity, String message) {
         final MaterialDialog dialog = new MaterialDialog.Builder(activity)
                 .setTitle(Constants.ERROR)
                 .setMessage(message)
@@ -72,10 +72,10 @@ public class Helpers {
         dist = Math.acos(dist);
         dist = rad2deg(dist);
         dist = dist * 60 * 1.1515;
-        long factor = (long)Math.pow(10, 3);
+        long factor = (long) Math.pow(10, 3);
         dist = dist * factor;
         double temp = Math.round(dist);
-        return (temp/factor);
+        return (temp / factor);
     }
 
     private double deg2rad(double deg) {
