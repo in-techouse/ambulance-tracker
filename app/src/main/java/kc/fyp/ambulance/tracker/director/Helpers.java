@@ -1,9 +1,13 @@
 package kc.fyp.ambulance.tracker.director;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.provider.Settings;
+
+import androidx.core.app.NotificationCompat;
 
 import com.shreyaspatil.MaterialDialog.MaterialDialog;
 
@@ -60,6 +64,46 @@ public class Helpers {
                 .build();
         // Show Dialog
         dialog.show();
+    }
+
+    public void showCollectionDialog(Activity activity, String message) {
+        final MaterialDialog dialog = new MaterialDialog.Builder(activity)
+                .setTitle("AMOUNT TO BE COLLECTED")
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(Constants.MESSAGES_OKAY, R.drawable.ic_okay, new MaterialDialog.OnClickListener() {
+                    @Override
+                    public void onClick(com.shreyaspatil.MaterialDialog.interfaces.DialogInterface dialogInterface, int which) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .setNegativeButton(Constants.MESSAGE_CLOSE, R.drawable.ic_close, new MaterialDialog.OnClickListener() {
+                    @Override
+                    public void onClick(com.shreyaspatil.MaterialDialog.interfaces.DialogInterface dialogInterface, int which) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .build();
+        // Show Dialog
+        dialog.show();
+    }
+
+    public void showNotification(Activity activity, String text, String message) {
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, "1");
+        builder.setTicker(text);
+        builder.setAutoCancel(true);
+        builder.setChannelId("1");
+        builder.setContentInfo(text);
+        builder.setContentTitle(text);
+        builder.setContentText(message);
+        builder.setSmallIcon(R.mipmap.ic_launcher);
+        builder.setVibrate(new long[]{1000, 1000, 1000, 1000, 1000});
+        builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+        builder.build();
+        NotificationManager manager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager != null) {
+            manager.notify(10, builder.build());
+        }
     }
 
     public double distance(double lat1, double lon1, double lat2, double lon2) {

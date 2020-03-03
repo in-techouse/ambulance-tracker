@@ -74,7 +74,6 @@
                     android:layout_marginStart="@dimen/mp10"
                     android:layout_marginTop="@dimen/mp10"
                     android:layout_toEndOf="@+id/image"
-                    android:text="Order Details"
                     android:textAlignment="textStart"
                     android:textColor="#444"
                     android:textSize="18dp"
@@ -88,7 +87,6 @@
                     android:layout_marginStart="@dimen/mp10"
                     android:layout_marginTop="@dimen/mp10"
                     android:layout_toEndOf="@+id/image"
-                    android:text="Order Details"
                     android:textAlignment="textStart"
                     android:textColor="#444"
                     android:textSize="18dp" />
@@ -137,8 +135,7 @@
                     android:id="@+id/date"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:text="Date" />
+                    android:layout_alignParentEnd="true" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -159,8 +156,7 @@
                     android:id="@+id/type"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:text="type" />
+                    android:layout_alignParentEnd="true" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -181,8 +177,7 @@
                     android:id="@+id/status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:text="status" />
+                    android:layout_alignParentEnd="true" />
             </RelativeLayout>
 
             <RelativeLayout
@@ -203,8 +198,7 @@
                     android:id="@+id/totalCharge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:text="totalCharge" />
+                    android:layout_alignParentEnd="true" />
             </RelativeLayout>
 
             <TextView
@@ -221,8 +215,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/mp10"
-                android:layout_marginEnd="@dimen/mp10"
-                android:text="address" />
+                android:layout_marginEnd="@dimen/mp10" />
 
             <View
                 android:layout_width="match_parent"

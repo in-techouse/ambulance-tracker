@@ -122,7 +122,7 @@
                 android:layout_marginBottom="5dp"
                 android:backgroundTint="@android:color/holo_green_dark"
                 android:foreground="?attr/selectableItemBackground"
-                android:text="Marked Complete"
+                android:text="START RIDE"
                 android:textColor="#fff" />
 
         </RelativeLayout>

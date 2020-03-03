@@ -1,105 +1,166 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/bottom_sheet"
     android:layout_width="match_parent"
-    android:layout_height="290dp"
+    android:layout_height="330dp"
     android:background="#fff"
     android:orientation="vertical"
     app:behavior_hideable="true"
-    app:behavior_peekHeight="290dp"
+    app:behavior_peekHeight="90dp"
     app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_gravity="center_vertical"
+        android:orientation="vertical"
         android:padding="7dp">
 
         <ProgressBar
+            android:id="@+id/sheetProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/sheetProgress"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center" />
 
         <RelativeLayout
-            android:layout_marginRight="10dp"
-            android:layout_marginLeft="10dp"
             android:id="@+id/mainSheet"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp">
 
             <de.hdodenhof.circleimageview.CircleImageView
-                android:layout_height="94dp"
-                android:layout_width="94dp"
                 android:id="@+id/providerImage"
+                android:layout_width="94dp"
+                android:layout_height="94dp"
+                android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
-                android:layout_alignParentStart="true">
-            </de.hdodenhof.circleimageview.CircleImageView>
+                android:src="@drawable/user"
+                app:civ_border_color="#FF000000"
+                app:civ_border_width="2dp" />
 
             <TextView
-                android:layout_marginStart="10dp"
-                android:layout_toEndOf="@+id/providerImage"
-                android:layout_width="match_parent"
                 android:id="@+id/providerName"
-                android:layout_height="wrap_content"
-                android:text="Order Details"
-                android:textColor="#444"
-                android:textSize="18dp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_below="@id/providerName"
-                android:layout_marginStart="10dp"
                 android:layout_width="match_parent"
-                android:layout_toEndOf="@+id/providerImage"
-                android:id="@+id/providerCategory"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="3dp"
+                android:layout_toEndOf="@+id/providerImage"
                 android:text="Order Details"
                 android:textColor="#444"
                 android:textSize="15dp"
-                />
+                android:textStyle="bold" />
 
             <TextView
-                android:layout_marginTop="10dp"
-                android:layout_alignParentStart="true"
-                android:layout_below="@id/providerImage"
+                android:id="@+id/ambulanceModel"
                 android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/providerName"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="3dp"
                 android:layout_toEndOf="@+id/providerImage"
-                android:id="@+id/bookingDate"
-                android:layout_height="wrap_content"
-                android:text="Booking Date"
                 android:textColor="#444"
-                android:textSize="13dp"
-                />
-
+                android:textSize="14dp"
+                android:textStyle="bold" />
 
             <TextView
-                android:layout_marginTop="10dp"
-                android:layout_alignParentStart="true"
-                android:layout_below="@id/bookingDate"
+                android:id="@+id/ambulanceRegistration"
                 android:layout_width="match_parent"
-                android:layout_toEndOf="@+id/bookingDate"
-                android:id="@+id/bookingAddress"
                 android:layout_height="wrap_content"
-                android:text="Booking Address"
+                android:layout_below="@id/ambulanceModel"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="3dp"
+                android:layout_toEndOf="@+id/providerImage"
                 android:textColor="#444"
-                android:textSize="13dp"
-                />
+                android:textSize="13dp" />
 
-            <Button
-                android:layout_marginBottom="5dp"
-                android:layout_below="@id/bookingAddress"
+            <RelativeLayout
+                android:id="@+id/callMe"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
-                android:id="@+id/cancelBooking"
-                android:backgroundTint="@android:color/holo_red_light"
-                android:foreground="?attr/selectableItemBackground"
-                android:text="Cancel"
-                android:textColor="#fff" />
+                android:layout_below="@id/ambulanceRegistration"
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@id/providerImage"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp">
+
+                <TextView
+                    android:id="@+id/providerPhone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:text="1234567890" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="13dp"
+                    android:layout_toEndOf="@id/providerPhone"
+                    android:src="@drawable/call" />
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/providerImage"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="@dimen/mp40"
+                android:layout_toEndOf="@+id/providerImage"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="Case Type"
+                        android:textAllCaps="true"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/caseTypeTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:text="Case Type" />
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/bookingDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Booking Date"
+                    android:textColor="#444"
+                    android:textSize="13dp" />
+
+                <TextView
+                    android:id="@+id/bookingAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Booking Address"
+                    android:textColor="#444"
+                    android:textSize="13dp" />
+
+                <Button
+                    android:id="@+id/cancelBooking"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/bookingAddress"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:backgroundTint="@android:color/holo_red_light"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:text="Cancel BOOKING"
+                    android:textColor="#fff" />
+            </LinearLayout>
         </RelativeLayout>
 
     </LinearLayout>

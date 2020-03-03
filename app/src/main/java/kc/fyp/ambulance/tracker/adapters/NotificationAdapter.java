@@ -52,7 +52,7 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
             if (role == 0)
                 holder.message.setText(n.getUserMessage());
             else
-                holder.message.setText(n.getDriverId());
+                holder.message.setText(n.getDriverMessage());
 
             holder.mainCard.setOnClickListener(new View.OnClickListener() {
                 @Override

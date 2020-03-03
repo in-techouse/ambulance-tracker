@@ -12,6 +12,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.MenuItem;
@@ -56,6 +57,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.shreyaspatil.MaterialDialog.MaterialDialog;
 
 import java.util.List;
 
@@ -70,7 +72,7 @@ import kc.fyp.ambulance.tracker.model.User;
 
 public class AmbulanceDashboard extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener {
 
-    private DatabaseReference bookingsReference = FirebaseDatabase.getInstance().getReference().child("Case");
+    private DatabaseReference bookingsReference = FirebaseDatabase.getInstance().getReference().child("Cases");
     private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference().child("Users");
     private ValueEventListener bookingsValueListener, bookingValueListener, userValueListener;
     private MapView map;
@@ -89,6 +91,8 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
     private CircleImageView providerImage;
     private EditText totalCharge;
     private Session session;
+    private boolean isStarted = false;
+    private Button cancelBooking, completeBooking;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,8 +115,8 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
         RelativeLayout callMe = findViewById(R.id.callMe);
         bookingAddress = findViewById(R.id.bookingAddress);
         bookingDate = findViewById(R.id.bookingDate);
-        Button cancelBooking = findViewById(R.id.cancelBooking);
-        Button completeBooking = findViewById(R.id.mark_complete);
+        cancelBooking = findViewById(R.id.cancelBooking);
+        completeBooking = findViewById(R.id.mark_complete);
 
         totalCharge = findViewById(R.id.totalCharge);
         Button amountSubmit = findViewById(R.id.amountSubmit);
@@ -236,7 +240,7 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
             if (!gps_enabled && !network_enabled) {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(AmbulanceDashboard.this);
                 dialog.setMessage("Oppsss.Your Location Service is off.\n Please turn on your Location and Try again Later");
-                dialog.setPositiveButton("Let me On", new DialogInterface.OnClickListener() {
+                dialog.setPositiveButton("Turn On", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
@@ -271,12 +275,12 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
                                 addresses = geocoder.getFromLocation(me.latitude, me.longitude, 1);
                                 if (addresses != null && addresses.size() > 0) {
                                     Address address = addresses.get(0);
-                                    String strAddress = "";
-                                    for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
+                                    String strAddress = address.getAddressLine(0);
+                                    for (int i = 1; i <= address.getMaxAddressLineIndex(); i++) {
                                         strAddress = strAddress + " " + address.getAddressLine(i);
                                     }
                                     locationAddress.setText(strAddress);
-                                    updateUserLocation(me.latitude, me.longitude);
+//                                    updateUserLocation(me.latitude, me.longitude);
                                 }
                             } catch (Exception exception) {
                                 helpers.showError(AmbulanceDashboard.this, Constants.ERROR_SOMETHING_WENT_WRONG);
@@ -353,6 +357,7 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
     }
 
     private void listenToBookings() {
+        Log.e("AmbulanceDashboard", "Bookings value event Listener registered");
         bookingsValueListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -363,10 +368,10 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
                         if (userCase != null) {
                             Log.e("AmbulanceDashboard", "Bookings value event Listener, booking found with status: " + userCase.getStatus());
                             if (userCase.getStatus().equals("New")) {
-//                                showBookingDialog(userCase);
-                            } else if (userCase.getStatus().equals("In Progress")) {
+                                showBookingDialog(userCase);
+                            } else if (userCase.getStatus().equals("In Progress") || userCase.getStatus().equals("Started")) {
                                 activeBooking = userCase;
-//                                onBookingInProgress();
+                                onBookingInProgress();
                             }
                         }
                     }
@@ -378,41 +383,240 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
             }
         };
 
-        bookingsReference.orderByChild("type").equalTo(user.getType()).addValueEventListener(bookingsValueListener);
+        bookingsReference.addValueEventListener(bookingsValueListener);
+    }
+
+    private void showBookingDialog(final Case userCase) {
+        helpers.showNotification(AmbulanceDashboard.this, "New Case", "We have a new case for you. It's time to help someone.");
+
+        final MaterialDialog dialog = new MaterialDialog.Builder(AmbulanceDashboard.this)
+                .setTitle("NEW CASE")
+                .setMessage("We have a new case for you. It's time to help someone.")
+                .setCancelable(false)
+                .setPositiveButton("DETAILS", R.drawable.ic_okay, new MaterialDialog.OnClickListener() {
+                    @Override
+                    public void onClick(com.shreyaspatil.MaterialDialog.interfaces.DialogInterface dialogInterface, int which) {
+                        dialogInterface.dismiss();
+                        Intent it = new Intent(AmbulanceDashboard.this, ShowCaseDetail.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("case", userCase);
+                        it.putExtras(bundle);
+                        startActivity(it);
+                    }
+                })
+                .setNegativeButton("REJECT", R.drawable.ic_close, new MaterialDialog.OnClickListener() {
+                    @Override
+                    public void onClick(com.shreyaspatil.MaterialDialog.interfaces.DialogInterface dialogInterface, int which) {
+                        dialogInterface.dismiss();
+                    }
+                })
+                .build();
+        dialog.show();
+    }
+
+    private void onBookingInProgress() {
+        bookingsReference.removeEventListener(bookingsValueListener);
+        sheetbehavoior.setHideable(false);
+        sheetbehavoior.setPeekHeight(220);
+        sheetbehavoior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        sheetprogress.setVisibility(View.VISIBLE);
+        mainsheet.setVisibility(View.GONE);
+        amountLayout.setVisibility(View.GONE);
+        listenToBookingChanges();
+
+        userValueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                userReference.removeEventListener(userValueListener);
+                Log.e("AmbulanceDashboard", "User value event listener called SnapShot: " + dataSnapshot.toString());
+                sheetprogress.setVisibility(View.GONE);
+                mainsheet.setVisibility(View.VISIBLE);
+                activeCustomer = dataSnapshot.getValue(User.class);
+                if (activeCustomer != null && activeBooking != null) {
+                    if (activeCustomer.getImage() != null && activeCustomer.getImage().length() > 0) {
+                        Glide.with(AmbulanceDashboard.this).load(activeCustomer.getImage()).into(providerImage);
+                    }
+                    providerName.setText(activeCustomer.getFirstName() + " " + activeCustomer.getLastName());
+                    providerPhone.setText(activeCustomer.getPhone());
+                    bookingAddress.setText(activeBooking.getAddress());
+                    bookingDate.setText(activeBooking.getDate());
+
+                    if (customerMarker != null) {
+                        customerMarker.remove();
+                    }
+                    LatLng latLng = new LatLng(activeCustomer.getLatitude(), activeCustomer.getLongitude());
+                    MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(activeCustomer.getFirstName());
+                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                    customerMarker = googleMap.addMarker(markerOptions);
+                    customerMarker.showInfoWindow();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                userReference.removeEventListener(userValueListener);
+                Log.e("AmbulanceDashboard", "User value event listener called");
+                sheetprogress.setVisibility(View.GONE);
+                mainsheet.setVisibility(View.VISIBLE);
+            }
+        };
+
+        userReference.child(activeBooking.getUserId()).addValueEventListener(userValueListener);
+
+    }
+
+    private void listenToBookingChanges() {
+        bookingValueListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.e("AmbulanceDashboard", "Booking Value Listener");
+                Case booking = dataSnapshot.getValue(Case.class);
+                if (activeBooking != null && booking != null) {
+                    activeBooking = booking;
+                    if (activeBooking != null && activeBooking.getStatus() != null) {
+                        switch (activeBooking.getStatus()) {
+                            case "Started":
+                                if (!isStarted)
+                                    calculateFare();
+                                isStarted = true;
+                                cancelBooking.setVisibility(View.GONE);
+                                completeBooking.setText("MARK COMPLETE");
+
+                                break;
+                            case "Cancelled":
+                                onBookingCancelled();
+                                break;
+                            case "Completed":
+                                onBookingCompleted();
+                                break;
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        };
+
+        bookingValueListener = bookingsReference.child(activeBooking.getId()).addValueEventListener(bookingValueListener);
+    }
+
+    private void calculateFare() {
+        if (activeBooking != null && !activeBooking.getStatus().equals("Started")) {
+            return;
+        }
+        new CountDownTimer(12000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                Log.e("AmbulanceDashboard", "calculateFare, OnTick");
+            }
+
+            @Override
+            public void onFinish() {
+                if (activeBooking != null && activeBooking.getStatus().equals("Started")) {
+                    activeBooking.setAmountCharged(activeBooking.getAmountCharged() + 17);
+                    bookingsReference.child(activeBooking.getId()).child("amountCharged").setValue(activeBooking.getAmountCharged());
+                    calculateFare();
+                }
+            }
+        }.start();
+    }
+
+    private void onBookingCancelled() {
+        forBothCancelledAndCompleted();
+    }
+
+    private void onBookingCompleted() {
+        forBothCancelledAndCompleted();
+    }
+
+    private void forBothCancelledAndCompleted() {
+        if (activeBooking.getAmountCharged() > 0) {
+            helpers.showCollectionDialog(AmbulanceDashboard.this, "Total amount to be collected from " + activeCustomer.getFirstName() + " is " + activeBooking.getAmountCharged() + " RS.");
+        }
+        sheetprogress.setVisibility(View.VISIBLE);
+        mainsheet.setVisibility(View.GONE);
+        if (userValueListener != null) {
+            userReference.removeEventListener(userValueListener);
+        }
+        if (bookingValueListener != null) {
+            bookingsReference.addValueEventListener(bookingValueListener);
+        }
+        if (customerMarker != null) {
+            customerMarker.remove();
+        }
+        sheetprogress.setVisibility(View.GONE);
+        mainsheet.setVisibility(View.VISIBLE);
+        sheetbehavoior.setHideable(true);
+        sheetbehavoior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        activeBooking = null;
+        listenToBookings();
     }
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
         switch (id) {
-//            case R.id.cancelBooking: {
-//                Log.e("AmbulanceDashboard", "button clicked");
-//                mainsheet.setVisibility(View.GONE);
-//                sheetprogress.setVisibility(View.VISIBLE);
-//                activeBooking.setStatus("Cancelled");
-//                bookingsReference.child(activeBooking.getId()).child("status").setValue(activeBooking.getStatus()).addOnSuccessListener(new OnSuccessListener<Void>() {
-//                    @Override
-//                    public void onSuccess(Void aVoid) {
-//                        Log.e("AmbulanceDashboard", "Cancelled");
-//                    }
-//                }).addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception e) {
-//                        Log.e("AmbulanceDashboard", "Cancellation Failed");
-//                        helpers.showError(AmbulanceDashboard.this, "something went wrong while cancelling the booking,plz try later");
-//                        sheetprogress.setVisibility(View.GONE);
-//                        mainsheet.setVisibility(View.VISIBLE);
-//                    }
-//                });
-//                break;
-//            }
-//            case R.id.mark_complete: {
-//                Log.e("AmbulanceDashboard", "button clicked");
+            case R.id.cancelBooking: {
+                Log.e("AmbulanceDashboard", "button clicked");
+                mainsheet.setVisibility(View.GONE);
+                sheetprogress.setVisibility(View.VISIBLE);
+                activeBooking.setStatus("Cancelled");
+                bookingsReference.child(activeBooking.getId()).child("status").setValue(activeBooking.getStatus()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.e("AmbulanceDashboard", "Cancelled");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("AmbulanceDashboard", "Cancellation Failed");
+                        helpers.showError(AmbulanceDashboard.this, "something went wrong while cancelling the booking,plz try later");
+                        sheetprogress.setVisibility(View.GONE);
+                        mainsheet.setVisibility(View.VISIBLE);
+                    }
+                });
+                break;
+            }
+            case R.id.mark_complete: {
+                Log.e("AmbulanceDashboard", "button clicked");
+                if (isStarted) {
+                    // Mark Complete
+                    activeBooking.setStatus("Completed");
+                    bookingsReference.child(activeBooking.getId()).child("status").setValue(activeBooking.getStatus()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            isStarted = false;
+                            Log.e("AmbulanceDashboard", "Cancelled");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.e("AmbulanceDashboard", "Cancellation Failed");
+                            helpers.showError(AmbulanceDashboard.this, Constants.ERROR_SOMETHING_WENT_WRONG);
+                        }
+                    });
+                } else {
+                    // Start the ride
+                    activeBooking.setStatus("Started");
+                    bookingsReference.child(activeBooking.getId()).child("status").setValue(activeBooking.getStatus()).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Log.e("AmbulanceDashboard", "Cancelled");
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.e("AmbulanceDashboard", "Cancellation Failed");
+                            helpers.showError(AmbulanceDashboard.this, Constants.ERROR_SOMETHING_WENT_WRONG);
+                        }
+                    });
+                }
 //                mainsheet.setVisibility(View.GONE);
 //                amountLayout.setVisibility(View.VISIBLE);
-//                break;
-//            }
-//
+                break;
+            }
 //            case R.id.amountSubmit: {
 //                String strTotalCharge = totalCharge.getText().toString();
 //                if (strTotalCharge.length() < 1) {

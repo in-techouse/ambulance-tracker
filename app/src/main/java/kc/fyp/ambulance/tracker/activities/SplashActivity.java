@@ -63,7 +63,6 @@ public class SplashActivity extends Activity {
         hold.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-
             }
 
             @Override
@@ -74,12 +73,8 @@ public class SplashActivity extends Activity {
 
             @Override
             public void onAnimationRepeat(Animation animation) {
-
             }
         });
-
         imageView.startAnimation(hold);
-
-
     }
 }

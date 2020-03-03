@@ -9,5 +9,94 @@
     tools:context=".activities.EditUserProfile"
     tools:showIn="@layout/activity_edit_user_profile">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/mp7"
+        android:orientation="vertical"
+        android:padding="@dimen/mp7">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/mp7"
+            android:padding="@dimen/mp7">
+
+            <EditText
+                android:id="@+id/edtPhoneNo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:hint="@string/phone_no"
+                android:inputType="phone"
+                android:textColor="@color/colorPrimaryDark" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/mp7"
+            android:padding="@dimen/mp7">
+
+            <EditText
+                android:id="@+id/edtFirstName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/first_name"
+                android:inputType="textPersonName"
+                android:textColor="@color/colorPrimaryDark" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/mp7"
+            android:padding="@dimen/mp7">
+
+            <EditText
+                android:id="@+id/edtLastName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/last_name"
+                android:inputType="textPersonName"
+                android:textColor="@color/colorPrimaryDark" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/mp7"
+            android:padding="@dimen/mp7">
+
+            <EditText
+                android:id="@+id/edtEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/email"
+                android:inputType="textEmailAddress"
+                android:textColor="@color/colorPrimaryDark" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/userProfile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginLeft="@dimen/login_button_margin"
+            android:layout_marginTop="@dimen/login_button_margin"
+            android:layout_marginRight="@dimen/login_button_margin"
+            android:text="@string/save"
+            android:textColor="@color/colorTextWhite" />
+
+        <ProgressBar
+            android:id="@+id/userProfileProgress"
+            android:layout_width="@dimen/mp32"
+            android:layout_height="@dimen/mp32"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/mp12"
+            android:layout_marginBottom="@dimen/mp12"
+            android:visibility="gone" />
+
+    </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>
