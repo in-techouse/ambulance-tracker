@@ -18,5 +18,4 @@
         android:scaleType="fitCenter"
         android:src="@drawable/ambulance_logo" />
 
-
 </RelativeLayout>

@@ -32,7 +32,6 @@ public class Session {
         editor.commit();
     }
 
-
     public void destroySession() {
         editor.remove("user");
         editor.remove("ambulance");
@@ -42,9 +41,7 @@ public class Session {
     public User getUser() {
         User user = new User();
         try {
-
             String value = preferences.getString("user", "*");
-
             if (value.equals("*")) {
                 user = null;
             } else {
@@ -59,9 +56,7 @@ public class Session {
     public Ambulance getAmbulance() {
         Ambulance ambulance = new Ambulance();
         try {
-
             String value = preferences.getString("ambulance", "*");
-
             if (value.equals("*")) {
                 ambulance = null;
             } else {

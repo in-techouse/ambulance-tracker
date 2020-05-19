@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class User implements Serializable {
     private String id, firstName, lastName, email, phone, image;
-    private int type; // 0 => Customer, 1 => Ambulance
+    private int type; // 0 => Customer, 1 => Ambulance Driver
     private double latitude, longitude;
 
     public User() {

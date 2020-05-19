@@ -37,14 +37,14 @@ public class SplashActivity extends Activity {
                     imageView.clearAnimation();
                     Session session = new Session(SplashActivity.this);
                     User user = session.getUser();
-                    if (user == null) {
+                    if (user == null) { // User is not logged in, move to the Login Screen
                         Intent intent = new Intent(SplashActivity.this, LoginActivity.class);
                         startActivity(intent);
-                    } else {
-                        if (user.getType() == 0) {
+                    } else { // User is logged in, move to the relevant dashboard
+                        if (user.getType() == 0) { // User is customer, move to dashboard
                             Intent intent = new Intent(SplashActivity.this, Dashboard.class);
                             startActivity(intent);
-                        } else {
+                        } else { // User is ambulance driver, move to Ambulance Dashboard
                             Intent intent = new Intent(SplashActivity.this, AmbulanceDashboard.class);
                             startActivity(intent);
                         }

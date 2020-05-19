@@ -46,6 +46,7 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
     private TextView timer, resend;
     private String strPhoneNo;
     private DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+    private ValueEventListener userValueEventListener, ambulanceValueEventListener;
     private Session session;
 
     @Override
@@ -225,11 +226,14 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
 
     private void checkUser() {
 
-        reference.child("Users").child(strPhoneNo).addValueEventListener(new ValueEventListener() {
+        userValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if (userValueEventListener != null)
+                    reference.child("Users").child(strPhoneNo).removeEventListener(userValueEventListener);
+                if (userValueEventListener != null)
+                    reference.removeEventListener(userValueEventListener);
                 if (dataSnapshot.getValue() == null) {
-                    reference.removeEventListener(this);
                     verifyProgress.setVisibility(View.GONE);
                     btnVerify.setVisibility(View.VISIBLE);
                     Intent intent = new Intent(OTPVerification.this, UserProfile.class);
@@ -243,7 +247,6 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
                     User user = dataSnapshot.getValue(User.class);
                     session.setSession(user);
                     if (user == null) {
-                        reference.removeEventListener(this);
                         verifyProgress.setVisibility(View.GONE);
                         btnVerify.setVisibility(View.VISIBLE);
                         Intent intent = new Intent(OTPVerification.this, UserProfile.class);
@@ -269,19 +272,78 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                reference.removeEventListener(this);
+                if (userValueEventListener != null)
+                    reference.child("Users").child(strPhoneNo).removeEventListener(userValueEventListener);
+                if (userValueEventListener != null)
+                    reference.removeEventListener(userValueEventListener);
                 verifyProgress.setVisibility(View.GONE);
                 btnVerify.setVisibility(View.VISIBLE);
                 helpers.showError(OTPVerification.this, Constants.ERROR_SOMETHING_WENT_WRONG);
             }
-        });
+        };
+
+        reference.child("Users").child(strPhoneNo).addValueEventListener(userValueEventListener);
+
+//        reference.child("Users").child(strPhoneNo).addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                if (dataSnapshot.getValue() == null) {
+//                    reference.removeEventListener(this);
+//                    verifyProgress.setVisibility(View.GONE);
+//                    btnVerify.setVisibility(View.VISIBLE);
+//                    Intent intent = new Intent(OTPVerification.this, UserProfile.class);
+//                    Bundle bundle = new Bundle();
+//                    bundle.putString("phone", strPhoneNo);
+//                    intent.putExtras(bundle);
+//                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                    startActivity(intent);
+//                    finish();
+//                } else {
+//                    User user = dataSnapshot.getValue(User.class);
+//                    session.setSession(user);
+//                    if (user == null) {
+//                        reference.removeEventListener(this);
+//                        verifyProgress.setVisibility(View.GONE);
+//                        btnVerify.setVisibility(View.VISIBLE);
+//                        Intent intent = new Intent(OTPVerification.this, UserProfile.class);
+//                        Bundle bundle = new Bundle();
+//                        bundle.putString("phone", strPhoneNo);
+//                        intent.putExtras(bundle);
+//                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                        startActivity(intent);
+//                        finish();
+//                    } else if (user.getType() == 0) {
+//                        reference.removeEventListener(this);
+//                        verifyProgress.setVisibility(View.GONE);
+//                        btnVerify.setVisibility(View.VISIBLE);
+//                        Intent intent = new Intent(OTPVerification.this, Dashboard.class);
+//                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                        startActivity(intent);
+//                        finish();
+//                    } else {
+//                        getAmbulanceDetail();
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//                reference.removeEventListener(this);
+//                verifyProgress.setVisibility(View.GONE);
+//                btnVerify.setVisibility(View.VISIBLE);
+//                helpers.showError(OTPVerification.this, Constants.ERROR_SOMETHING_WENT_WRONG);
+//            }
+//        });
     }
 
     private void getAmbulanceDetail() {
-        reference.child("Ambulances").orderByChild("driverId").equalTo(strPhoneNo).addValueEventListener(new ValueEventListener() {
+        ambulanceValueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                reference.removeEventListener(this);
+                if (ambulanceValueEventListener != null)
+                    reference.child("Ambulances").orderByChild("driverId").equalTo(strPhoneNo).removeEventListener(ambulanceValueEventListener);
+                if (ambulanceValueEventListener != null)
+                    reference.removeEventListener(ambulanceValueEventListener);
                 verifyProgress.setVisibility(View.GONE);
                 btnVerify.setVisibility(View.VISIBLE);
                 for (DataSnapshot data : dataSnapshot.getChildren()) {
@@ -303,11 +365,59 @@ public class OTPVerification extends AppCompatActivity implements View.OnClickLi
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                reference.removeEventListener(this);
+                if (ambulanceValueEventListener != null)
+                    reference.child("Ambulances").orderByChild("driverId").equalTo(strPhoneNo).removeEventListener(ambulanceValueEventListener);
+                if (ambulanceValueEventListener != null)
+                    reference.removeEventListener(ambulanceValueEventListener);
                 verifyProgress.setVisibility(View.GONE);
                 btnVerify.setVisibility(View.VISIBLE);
                 helpers.showError(OTPVerification.this, Constants.ERROR_SOMETHING_WENT_WRONG);
             }
-        });
+        };
+
+        reference.child("Ambulances").orderByChild("driverId").equalTo(strPhoneNo).addValueEventListener(ambulanceValueEventListener);
+
+//        reference.child("Ambulances").orderByChild("driverId").equalTo(strPhoneNo).addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                verifyProgress.setVisibility(View.GONE);
+//                btnVerify.setVisibility(View.VISIBLE);
+//                for (DataSnapshot data : dataSnapshot.getChildren()) {
+//                    Ambulance ambulance = data.getValue(Ambulance.class);
+//                    Log.e("OTP", "Ambulance Data Snapshot: " + dataSnapshot.toString());
+//                    if (ambulance != null) {
+//                        Log.e("OTP", "Ambulance is not null");
+//                        Log.e("OTP", "Ambulance Registration: " + ambulance.getRegistrationNumber());
+//                        Log.e("OTP", "Ambulance Model: " + ambulance.getAmbulanceModel());
+//                        Log.e("OTP", "Ambulance Driver: " + ambulance.getDriverId());
+//                        session.setAmbulance(ambulance);
+//                    }
+//                }
+//                Intent intent = new Intent(OTPVerification.this, AmbulanceDashboard.class);
+//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//                startActivity(intent);
+//                finish();
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//                verifyProgress.setVisibility(View.GONE);
+//                btnVerify.setVisibility(View.VISIBLE);
+//                helpers.showError(OTPVerification.this, Constants.ERROR_SOMETHING_WENT_WRONG);
+//            }
+//        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (userValueEventListener != null)
+            reference.child("Users").child(strPhoneNo).removeEventListener(userValueEventListener);
+        if (userValueEventListener != null)
+            reference.removeEventListener(userValueEventListener);
+        if (ambulanceValueEventListener != null)
+            reference.child("Ambulances").orderByChild("driverId").equalTo(strPhoneNo).removeEventListener(ambulanceValueEventListener);
+        if (ambulanceValueEventListener != null)
+            reference.removeEventListener(ambulanceValueEventListener);
     }
 }

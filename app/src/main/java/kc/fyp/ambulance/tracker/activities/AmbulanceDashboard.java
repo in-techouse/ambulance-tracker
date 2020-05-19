@@ -139,6 +139,7 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
         helpers = new Helpers();
         locationProviderClient = LocationServices.getFusedLocationProviderClient(AmbulanceDashboard.this);
 
+        // Drawer Header code.
         View header = navigationView.getHeaderView(0);
         TextView profile_email = header.findViewById(R.id.profile_email);
         TextView profile_name = header.findViewById(R.id.profile_name);
@@ -161,7 +162,10 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
         if (user.getImage() != null && user.getImage().length() > 0) {
             Glide.with(getApplicationContext()).load(user.getImage()).into(profile_image);
         }
+
         locationAddress = findViewById(R.id.locationAddress);
+
+        // Initialize Map View
         map = findViewById(R.id.map);
         map.onCreate(savedInstanceState);
         try {
@@ -202,21 +206,22 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
 
     public void enableLocation() {
         if (askForPermission()) {
-            googleMap.setMyLocationEnabled(true);
+            googleMap.setMyLocationEnabled(true);  // Show Location button
+            // Location button click listener
             googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
                 @Override
                 public boolean onMyLocationButtonClick() {
                     FusedLocationProviderClient current = LocationServices.getFusedLocationProviderClient(AmbulanceDashboard.this);
                     current.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                         public void onSuccess(Location location) {
-                            getDeviceLocation();
+                            getDeviceLocation();  // Get user location on button pressed
                         }
                     });
                     return true;
                 }
             });
-            getDeviceLocation();
-            listenToBookings();
+            getDeviceLocation(); // Get user location on application start
+            listenToBookings(); // Listen to bookings, and show the driver a dialog, if a user post a new booking/case
         }
     }
 
@@ -239,7 +244,7 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
             }
             if (!gps_enabled && !network_enabled) {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(AmbulanceDashboard.this);
-                dialog.setMessage("Oppsss.Your Location Service is off.\n Please turn on your Location and Try again Later");
+                dialog.setMessage("Oppsss.Your Location Service is off.\nPlease turn on your Location and Try again Later");
                 dialog.setPositiveButton("Turn On", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -280,7 +285,7 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
                                         strAddress = strAddress + " " + address.getAddressLine(i);
                                     }
                                     locationAddress.setText(strAddress);
-//                                    updateUserLocation(me.latitude, me.longitude);
+                                    updateUserLocation(me.latitude, me.longitude);
                                 }
                             } catch (Exception exception) {
                                 helpers.showError(AmbulanceDashboard.this, Constants.ERROR_SOMETHING_WENT_WRONG);
@@ -356,9 +361,11 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
         userReference.child(user.getPhone()).setValue(user);
     }
 
+    // Listen to bookings, and show the driver a dialog, if a user post a new booking/case
     private void listenToBookings() {
         Log.e("AmbulanceDashboard", "Bookings value event Listener registered");
         bookingsValueListener = new ValueEventListener() {
+            // Fetch data success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Log.e("AmbulanceDashboard", "Bookings value event Listener");
@@ -367,17 +374,17 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
                         Case userCase = d.getValue(Case.class);
                         if (userCase != null) {
                             Log.e("AmbulanceDashboard", "Bookings value event Listener, booking found with status: " + userCase.getStatus());
-                            if (userCase.getStatus().equals("New")) {
-                                showBookingDialog(userCase);
-                            } else if (userCase.getStatus().equals("In Progress") || userCase.getStatus().equals("Started")) {
+                            if (userCase.getStatus().equals("New")) { // If the status of case is new, that's a new case/booking. show the driver a dialog
+                                showBookingDialog(userCase); // Show the driver a dialog
+                            } else if (userCase.getStatus().equals("In Progress") || userCase.getStatus().equals("Started")) { // Handle, if the driver already has an active booking
                                 activeBooking = userCase;
-                                onBookingInProgress();
+                                onBookingInProgress(); // Show the bottom sheet and customer details
                             }
                         }
                     }
                 }
             }
-
+            // Fetch data failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
@@ -398,8 +405,11 @@ public class AmbulanceDashboard extends AppCompatActivity implements NavigationV
                     public void onClick(com.shreyaspatil.MaterialDialog.interfaces.DialogInterface dialogInterface, int which) {
                         dialogInterface.dismiss();
                         Intent it = new Intent(AmbulanceDashboard.this, ShowCaseDetail.class);
+                        // To pass data to new activity.
                         Bundle bundle = new Bundle();
-                        bundle.putSerializable("case", userCase);
+                        // Passing data to activity
+                        bundle.putSerializable("case", userCase); // Usecase is the data object
+                        // Passing bundle to the intent
                         it.putExtras(bundle);
                         startActivity(it);
                     }

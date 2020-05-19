@@ -43,8 +43,9 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
     private DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Cases");
     private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference().child("Users");
     private ValueEventListener bookingListener, userListener;
-    private CaseAdapter adapter;
+    private CaseAdapter adapter; // Attach RecyclerView and Data to display all the items.
     private String orderBy;
+    // Case Detail Bottom Sheet Variables
     private BottomSheetBehavior sheetBehavior;
     private ProgressBar sheetProgress;
     private LinearLayout mainSheet;
@@ -56,6 +57,7 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cases);
+
         loading = findViewById(R.id.loading);
         noCase = findViewById(R.id.noBooking);
         cases = findViewById(R.id.bookings);
@@ -66,16 +68,18 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
         cases.setAdapter(adapter);
         data = new ArrayList<>();
 
+        // Bottom Sheet initialization
         LinearLayout layoutBottomSheet = findViewById(R.id.bottom_sheet);
         sheetBehavior = BottomSheetBehavior.from(layoutBottomSheet);
         sheetBehavior.setHideable(true);
         sheetBehavior.setPeekHeight(0);
         sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
+        // Bottom sheet inner variables
         Button closeSheet = findViewById(R.id.closeSheet);
         closeSheet.setOnClickListener(this);
-        sheetProgress = findViewById(R.id.sheetProgress);
-        mainSheet = findViewById(R.id.mainSheet);
+        sheetProgress = findViewById(R.id.sheetProgress); // Loading bar, will be displayed until the data is not loaded.
+        mainSheet = findViewById(R.id.mainSheet); // Will be displayed when data is loaded.
 
         image = findViewById(R.id.image);
         about = findViewById(R.id.about);
@@ -88,11 +92,13 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
         address = findViewById(R.id.address);
         userLayout = findViewById(R.id.userLayout);
 
-        if (user.getType() == 0) {
+        // Check the user is customer or ambulance driver.
+        if (user.getType() == 0) { // it's customer.
             orderBy = "userId";
-        } else {
+        } else { // It's Driver
             orderBy = "driverId";
         }
+
         loadCases();
     }
 
@@ -102,17 +108,18 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
         cases.setVisibility(View.GONE);
 
         bookingListener = new ValueEventListener() {
+            // Fetch data success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Log.e("Case", "Data Snap Shot: " + dataSnapshot.toString());
-                data.clear();
+                data.clear(); // Remove data, to avoid duplication
                 for (DataSnapshot d : dataSnapshot.getChildren()) {
                     Case c = d.getValue(Case.class);
                     if (c != null) {
                         data.add(c);
                     }
                 }
-                Collections.reverse(data);
+                Collections.reverse(data); // Reverse the data list, to display the latest booking on top.
                 Log.e("Case", "Data List Size: " + data.size());
                 if (data.size() > 0) {
                     Log.e("Case", "If, list visible");
@@ -126,7 +133,7 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
                 loading.setVisibility(View.GONE);
                 adapter.setData(data);
             }
-
+            // Fetch data failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 loading.setVisibility(View.GONE);
@@ -134,20 +141,27 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
                 cases.setVisibility(View.GONE);
             }
         };
-        reference.orderByChild(orderBy).equalTo(user.getPhone()).addValueEventListener(bookingListener);
+
+        reference
+                .orderByChild(orderBy) // Telling about the column, userId or driverId
+                .equalTo(user.getPhone()) // Telling about the value,
+                .addValueEventListener(bookingListener);
     }
 
     public void showBottomSheet(final Case userCase) {
         sheetBehavior.setHideable(false);
-        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        sheetProgress.setVisibility(View.VISIBLE);
-        mainSheet.setVisibility(View.GONE);
+        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED); // Display the sheet.
+        sheetProgress.setVisibility(View.VISIBLE); // Loading bar inside the bottom sheet, will be visible until the user data is not loaded.
+        mainSheet.setVisibility(View.GONE); // The main view, holding all the views to display data.
 
-        if (user.getType() == 0) {
+        // Check the user is customer or ambulance driver.
+        if (user.getType() == 0) { // it's customer
             about.setText("Ambulance detail");
         } else {
             about.setText("Customer detail");
         }
+
+        // Display data of case
         date.setText(userCase.getDate());
         address.setText(userCase.getAddress());
         totalCharge.setText(userCase.getAmountCharged() + " RS.");
@@ -155,19 +169,22 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
         status.setText(userCase.getStatus());
 
         if (userCase.getDriverId().equals("")) {
-            about.setVisibility(View.GONE);
-            userLayout.setVisibility(View.GONE);
+            about.setVisibility(View.GONE); // Heading
+            userLayout.setVisibility(View.GONE); // The main view displaying the user detail.
             sheetProgress.setVisibility(View.GONE);
             mainSheet.setVisibility(View.VISIBLE);
             return;
         }
 
-        about.setVisibility(View.VISIBLE);
-        userLayout.setVisibility(View.VISIBLE);
+        about.setVisibility(View.VISIBLE); // Heading, visible
+        userLayout.setVisibility(View.VISIBLE); // The main view displaying the user detail.
 
+        // Get the detail of customer or ambulance driver, using the userId or driverId.
         userListener = new ValueEventListener() {
+            // Data fetch success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Remove database listener.
                 if (user.getType() == 0) {
                     userReference.child(userCase.getDriverId()).removeEventListener(userListener);
                 } else {
@@ -176,6 +193,7 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
                 userReference.removeEventListener(userListener);
                 User tempUser = dataSnapshot.getValue(User.class);
                 if (tempUser != null) {
+                    // Display user data.
                     if (tempUser.getImage() != null && tempUser.getImage().length() > 0) {
                         Glide.with(getApplicationContext()).load(tempUser.getImage()).into(image);
                     } else {
@@ -189,8 +207,10 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
                 }
             }
 
+            // Data fetch failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Remove database listener.
                 if (user.getType() == 0) {
                     userReference.child(userCase.getDriverId()).removeEventListener(userListener);
                 } else {
@@ -201,6 +221,7 @@ public class CasesActivity extends AppCompatActivity implements View.OnClickList
                 mainSheet.setVisibility(View.VISIBLE);
             }
         };
+        // Attach listener to fetch data.
         if (user.getType() == 0) {
             userReference.child(userCase.getDriverId()).addValueEventListener(userListener);
         } else {

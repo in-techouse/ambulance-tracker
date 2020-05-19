@@ -35,7 +35,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -63,13 +62,10 @@ import kc.fyp.ambulance.tracker.model.User;
 public class ShowCaseDetail extends AppCompatActivity implements View.OnClickListener {
     private Case userCase;
     private TextView UserName, user_address, travel, YourAddress;
-    private Button reject, accept;
     private MapView map;
     private GoogleMap googleMap;
-    private Marker userMarker, providerMarker;
     private FusedLocationProviderClient locationProviderClient;
     private Helpers helpers;
-    private Session session;
     private User user, customer;
     private LinearLayout progress, buttons;
     private CircleImageView userImage;
@@ -86,25 +82,26 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.activity_show_case_detail);
 
         Intent it = getIntent();
-        if (it == null) {
+        if (it == null) { // if the intent box is empty, finish the activity
             Log.e("CaseDetail", "Intent is NULL");
             finish();
             return;
-
         }
+
         Bundle b = it.getExtras();
-        if (b == null) {
+        if (b == null) { // if the bundle box is empty, finish the activity
             Log.e("CaseDetail", "Extra is NULL");
             finish();
             return;
         }
 
         userCase = (Case) b.getSerializable("case");
-        if (userCase == null) {
+        if (userCase == null) { // if the data is empty, finish the activity
             Log.e("CaseDetail", "Case is NULL");
             finish();
             return;
         }
+
         Log.e("CaseDetail", "Case Id: " + userCase.getId());
         progress = findViewById(R.id.progress);
         buttons = findViewById(R.id.buttons);
@@ -126,6 +123,7 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
         user = session.getUser();
         helpers = new Helpers();
 
+        // Fetch the detail of user, who posted the case.
         loadUserData();
 
         locationProviderClient = LocationServices.getFusedLocationProviderClient(ShowCaseDetail.this);
@@ -159,9 +157,13 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
 
     private void loadUserData() {
         userListener = new ValueEventListener() {
+            // Data fetch success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                userReference.removeEventListener(userListener);
+                if (userListener != null)
+                    userReference.child(userCase.getUserId()).removeEventListener(userListener);
+                if (userListener != null)
+                    userReference.removeEventListener(userListener);
                 if (!isUserFirst) {
                     return;
                 }
@@ -178,31 +180,35 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
                         }
                     } else {
                         Log.e("CaseDetail", "Customer is Null");
-                        UserName.setText("");
+                        UserName.setText(""); // Set empty user name, because no data found.
                         buttons.setVisibility(View.VISIBLE);
                         progress.setVisibility(View.GONE);
                     }
                 } else {
                     Log.e("CaseDetail", "DataSnapShot is Null");
-                    UserName.setText("");
+                    UserName.setText(""); // Set empty user name, because no data found.
                     buttons.setVisibility(View.VISIBLE);
                     progress.setVisibility(View.GONE);
                 }
             }
 
+            // Data fetch failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-                userReference.removeEventListener(userListener);
+                if (userListener != null)
+                    userReference.child(userCase.getUserId()).removeEventListener(userListener);
+                if (userListener != null)
+                    userReference.removeEventListener(userListener);
                 buttons.setVisibility(View.VISIBLE);
                 progress.setVisibility(View.GONE);
-                UserName.setText("");
+                UserName.setText(""); // Set empty user name, because no data found.
             }
         };
 
         userReference.child(userCase.getUserId()).addValueEventListener(userListener);
     }
 
-    private boolean askForPermission() {
+    private boolean askForPermission() { // Check if app have permission to get the current location.
         if (ActivityCompat.checkSelfPermission(ShowCaseDetail.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ActivityCompat.checkSelfPermission(ShowCaseDetail.this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(ShowCaseDetail.this, new String[]{
@@ -213,7 +219,7 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
     }
 
     public void enableLocation() {
-        if (askForPermission()) {
+        if (askForPermission()) { // Check if app have permission to get the current location.
             googleMap.setMyLocationEnabled(true);
             googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
                 @Override
@@ -227,7 +233,7 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
                     return true;
                 }
             });
-            getDeviceLocation();
+            getDeviceLocation(); // To get the user location on activity starts
         }
     }
 
@@ -250,13 +256,12 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
             }
             if (!gps_enabled && !network_enabled) {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(ShowCaseDetail.this);
-                dialog.setMessage("Oppsss.Your Location Service is off.\n Please turn on your Location and Try again Later");
-                dialog.setPositiveButton("Let me On", new DialogInterface.OnClickListener() {
+                dialog.setMessage("Oppsss.Your Location Service is off.\nPlease turn on your Location and Try again Later");
+                dialog.setPositiveButton("Let me on", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                         startActivity(myIntent);
-
                     }
                 });
                 dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -277,39 +282,39 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
                         if (location != null) {
                             googleMap.clear();
                             LatLng me = new LatLng(location.getLatitude(), location.getLongitude());
-                            providerMarker = googleMap.addMarker(new MarkerOptions().position(me).title("You're Here").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-                            LatLng customerlocation = new LatLng(userCase.getLatitude(), userCase.getLongitude());
-                            userMarker = googleMap.addMarker(new MarkerOptions().position(customerlocation).title("Customer Is Here").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+                            googleMap.addMarker(new MarkerOptions().position(me).title("You're Here").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                            LatLng customerLocation = new LatLng(userCase.getLatitude(), userCase.getLongitude());
+                            googleMap.addMarker(new MarkerOptions().position(customerLocation).title("Customer Is Here").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
 
                             googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(me, 11));
                             Geocoder geocoder = new Geocoder(ShowCaseDetail.this);
                             List<Address> addresses = null;
                             try {
-                                // Get Provider Current Address
+                                // Get Ambulance Driver Current Address
                                 addresses = geocoder.getFromLocation(me.latitude, me.longitude, 1);
                                 if (addresses != null && addresses.size() > 0) {
                                     Address address = addresses.get(0);
                                     String strAddress = "";
                                     for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-                                        strAddress = strAddress + " " + address.getAddressLine(i);
+                                        strAddress = strAddress + address.getAddressLine(i) + " ";
                                     }
                                     YourAddress.setText(strAddress);
                                 }
 
                                 // Get Customer Address
-                                addresses = geocoder.getFromLocation(customerlocation.latitude, customerlocation.longitude, 1);
+                                addresses = geocoder.getFromLocation(customerLocation.latitude, customerLocation.longitude, 1);
                                 if (addresses != null && addresses.size() > 0) {
                                     Address address = addresses.get(0);
                                     String strAddress = "";
                                     for (int i = 0; i <= address.getMaxAddressLineIndex(); i++) {
-                                        strAddress = strAddress + " " + address.getAddressLine(i);
+                                        strAddress = strAddress + address.getAddressLine(i) + " ";
                                     }
                                     user_address.setText(strAddress);
                                 } else {
                                     Log.e("CaseDetail", "User Address is Null");
                                 }
-
-                                double distance = helpers.distance(me.latitude, me.longitude, customerlocation.latitude, customerlocation.longitude);
+                                // Calculate difference between user location and driver location
+                                double distance = helpers.distance(me.latitude, me.longitude, customerLocation.latitude, customerLocation.longitude);
                                 travel.setText(distance + " KM");
 
                             } catch (Exception exception) {
@@ -347,10 +352,14 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
                 buttons.setVisibility(View.GONE);
                 progress.setVisibility(View.VISIBLE);
 
-                bookingListener = new ValueEventListener() {
+                bookingListener = new ValueEventListener() { // Get data from database.
+                    // Data fetch success function
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        bookingReference.removeEventListener(bookingListener);
+                        if (bookingListener != null)
+                            bookingReference.child(userCase.getId()).removeEventListener(bookingListener);
+                        if (bookingListener != null)
+                            bookingReference.removeEventListener(bookingListener);
                         if (!isFirst) {
                             return;
                         }
@@ -362,11 +371,11 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
                                     temp.setDriverId(user.getPhone());
                                     temp.setStatus("In Progress");
                                     temp.setAmountCharged(100);
-                                    acceptBooking(temp);
+                                    acceptBooking(temp); // Mark the booking accepted in database
                                 } else {
                                     buttons.setVisibility(View.VISIBLE);
                                     progress.setVisibility(View.GONE);
-                                    helpers.showError(ShowCaseDetail.this, "THE CASE HAS BEEN ACCEPTED BY ANOTHER AMBULANCE");
+                                    helpers.showError(ShowCaseDetail.this, "THE CASE HAS BEEN ACCEPTED BY ANOTHER AMBULANCE.");
                                 }
                             } else {
                                 buttons.setVisibility(View.VISIBLE);
@@ -380,9 +389,13 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
                         }
                     }
 
+                    // Data fetch failure function
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
-                        bookingReference.removeEventListener(bookingListener);
+                        if (bookingListener != null)
+                            bookingReference.child(userCase.getId()).removeEventListener(bookingListener);
+                        if (bookingListener != null)
+                            bookingReference.removeEventListener(bookingListener);
                         buttons.setVisibility(View.VISIBLE);
                         progress.setVisibility(View.GONE);
                         helpers.showError(ShowCaseDetail.this, Constants.ERROR_SOMETHING_WENT_WRONG);
@@ -398,6 +411,7 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    // Mark the booking accepted in database
     private void acceptBooking(final Case b) {
         Log.e("CaseDetail", "Id: " + b.getId());
         Log.e("CaseDetail", "Provider Id: " + b.getDriverId());
@@ -408,21 +422,26 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
         Log.e("CaseDetail", "Latitude: " + b.getLatitude());
         Log.e("CaseDetail", "Longitude: " + b.getLongitude());
         Log.e("CaseDetail", "User id: " + b.getUserId());
-        bookingReference.child(b.getId()).setValue(b).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                sendNotification(b);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                buttons.setVisibility(View.VISIBLE);
-                progress.setVisibility(View.GONE);
-                helpers.showError(ShowCaseDetail.this, Constants.ERROR_SOMETHING_WENT_WRONG);
-            }
-        });
+        bookingReference.child(b.getId()).setValue(b)
+                // Data update success listener
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        sendNotification(b); // Send notification to the user, whose booking has been accepted by the ambulance driver.
+                    }
+                })
+                // Data update failure listener
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        buttons.setVisibility(View.VISIBLE);
+                        progress.setVisibility(View.GONE);
+                        helpers.showError(ShowCaseDetail.this, Constants.ERROR_SOMETHING_WENT_WRONG);
+                    }
+                });
     }
 
+    // Send notification to the user, whose booking has been accepted by the ambulance driver.
     private void sendNotification(Case b) {
         Notification notification = new Notification();
         String id = notificationReference.push().getKey();
@@ -436,21 +455,25 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
         notification.setDate(date);
         notification.setUserMessage("Your case has been accepted by " + user.getFirstName() + " " + user.getLastName());
         notification.setDriverMessage("You accepted the case of " + customer.getFirstName() + " " + customer.getLastName());
-        notificationReference.child(notification.getId()).setValue(notification).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                buttons.setVisibility(View.VISIBLE);
-                progress.setVisibility(View.GONE);
-                finish();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                buttons.setVisibility(View.VISIBLE);
-                progress.setVisibility(View.GONE);
-                helpers.showError(ShowCaseDetail.this, Constants.ERROR_SOMETHING_WENT_WRONG);
-            }
-        });
+        notificationReference.child(notification.getId()).setValue(notification)
+                // Data save success function
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        buttons.setVisibility(View.VISIBLE);
+                        progress.setVisibility(View.GONE);
+                        finish();
+                    }
+                })
+                // Data save failure function
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        buttons.setVisibility(View.VISIBLE);
+                        progress.setVisibility(View.GONE);
+                        finish();
+                    }
+                });
     }
 
 
@@ -464,14 +487,12 @@ public class ShowCaseDetail extends AppCompatActivity implements View.OnClickLis
     protected void onResume() {
         super.onResume();
         map.onResume();
-
     }
 
     @Override
     public void onLowMemory() {
         super.onLowMemory();
         map.onLowMemory();
-
     }
 
     @Override

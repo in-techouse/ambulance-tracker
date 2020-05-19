@@ -82,12 +82,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                                     dialog.dismiss();
                                     verifyUser();
                                 }
-                            }).setNegativeButton(Constants.MESSAGE_NO_EDIT, new DialogInterface.OnClickListener() {
+                            })
+                            .setNegativeButton(Constants.MESSAGE_NO_EDIT, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     dialog.dismiss();
                                 }
-                            }).show();
+                            })
+                            .show();
                 }
                 break;
             }

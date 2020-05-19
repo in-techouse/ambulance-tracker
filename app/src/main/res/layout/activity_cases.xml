@@ -53,7 +53,6 @@
             android:layout_alignParentBottom="true"
             android:visibility="gone" />
 
-
     </RelativeLayout>
 
     <include layout="@layout/case_detail_bottom_sheet" />

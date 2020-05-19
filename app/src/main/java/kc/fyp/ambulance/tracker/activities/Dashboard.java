@@ -99,6 +99,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
     private Marker marker, activeProviderMarker;
     private LinearLayout searching, caseLayout;
     private CardView confirmCard;
+    // Bottom Sheet Variables
     private ProgressBar sheetProgress;
     private RelativeLayout mainSheet;
     private Case activeBooking;
@@ -154,7 +155,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         helpers = new Helpers();
         locationProviderClient = LocationServices.getFusedLocationProviderClient(Dashboard.this);
 
-
+        // Drawer Header code.
         View header = navigationView.getHeaderView(0);
         TextView profile_email = header.findViewById(R.id.profile_email);
         TextView profile_name = header.findViewById(R.id.profile_name);
@@ -171,7 +172,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
 
         locationAddress = findViewById(R.id.locationAddress);
 
-
+        // Initialize Map View
         map = findViewById(R.id.map);
         map.onCreate(savedInstanceState);
         try {
@@ -206,22 +207,23 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         if (!flag) {
             ActivityCompat.requestPermissions(Dashboard.this, PERMISSIONS, 1);
         } else {
-            googleMap.setMyLocationEnabled(true);
+            googleMap.setMyLocationEnabled(true); // Show Location button
+            // Location button click listener
             googleMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
                 @Override
                 public boolean onMyLocationButtonClick() {
                     FusedLocationProviderClient current = LocationServices.getFusedLocationProviderClient(Dashboard.this);
                     current.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
                         public void onSuccess(Location location) {
-                            getDeviceLocation();
+                            getDeviceLocation(); // Get user location on button pressed
                         }
                     });
                     return true;
                 }
             });
-            getDeviceLocation();
-            getAllAmbulances();
-            listenToBookingsChanges();
+            getDeviceLocation(); // Get user location on application start
+            getAllAmbulances(); // Display all ambulances on map
+            listenToBookingsChanges(); // If the user have an active booking/case, listen to it's changes.
         }
     }
 
@@ -243,13 +245,12 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
             }
             if (!gps_enabled && !network_enabled) {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(Dashboard.this);
-                dialog.setMessage("Oppsss.Your Location Service is off.\n Please turn on your Location and Try again Later");
+                dialog.setMessage("Oppsss.Your Location Service is off.\nPlease turn on your Location and Try again Later");
                 dialog.setPositiveButton("Turn On", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
                         startActivity(myIntent);
-
                     }
                 });
                 dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -270,7 +271,6 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                         if (location != null) {
                             if (marker != null)
                                 marker.remove();
-//                            googleMap.clear();
                             LatLng me = new LatLng(location.getLatitude(), location.getLongitude());
                             marker = googleMap.addMarker(new MarkerOptions().position(me).title("You're Here")
                                     .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
@@ -459,10 +459,11 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
 
     private void getAllAmbulances() {
         providerValueListener = new ValueEventListener() {
+            // Fetch data success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 googleMap.clear();
-                if (marker != null) {
+                if (marker != null) { // Again add user marker, if the marker has a location
                     marker = googleMap.addMarker(new MarkerOptions().position(marker.getPosition()).title("You're Here")
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
                     googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 11));
@@ -481,15 +482,18 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                 }
             }
 
+            // Fetch data failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         };
+        // Attach the listener to database.
         userReference.orderByChild("type").equalTo(1).addValueEventListener(providerValueListener);
     }
 
-    private void listenToBookingsChanges() {
+    private void listenToBookingsChanges() { // Get all the cases/bookings for once only
         bookingsValueListener = new ValueEventListener() {
+            // Fetch data success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 bookingReference.removeEventListener(bookingsValueListener);
@@ -501,14 +505,15 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                             Log.e("Dashboard", "Cases Value Event Listener, Case found with status: " + userCase.getStatus());
                             if (userCase.getStatus().equals("In Progress") || userCase.getStatus().equals("Started")) {
                                 activeBooking = userCase;
-                                listenToBookingChanges();
-                                onBookingInProgress();
+                                listenToBookingChanges(); // Get the detail of single case/booking, and listen to it's changes
+                                onBookingInProgress(); // Show the bottom sheet and ambulance details
                             }
                         }
                     }
                 }
             }
 
+            // Fetch data failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 bookingReference.removeEventListener(bookingsValueListener);
@@ -518,8 +523,9 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         bookingReference.orderByChild("userId").equalTo(user.getPhone()).addValueEventListener(bookingsValueListener);
     }
 
-    private void listenToBookingChanges() {
+    private void listenToBookingChanges() { // Get the detail of single case/booking, and listen to it's changes
         bookingValueListener = new ValueEventListener() {
+            // Fetch data success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Log.e("Dashboard", "Booking Value Listener");
@@ -528,22 +534,22 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                     activeBooking = userCase;
                     switch (activeBooking.getStatus()) {
                         case "In Progress":
-                            onBookingInProgress();
+                            onBookingInProgress(); // Show the bottom sheet and ambulance details
                             break;
                         case "Started":
-                            cancelBooking.setVisibility(View.GONE);
-
+                            cancelBooking.setVisibility(View.GONE); // Hide the cancel button, user can't cancel the case/bookings as the ride is started now.
                             break;
                         case "Cancelled":
-                            onBookingCancelled();
+                            onBookingCancelled(); // Hide the bottom sheet
                             break;
                         case "Completed":
-                            onBookingCompleted();
+                            onBookingCompleted(); // Hide the bottom sheet
                             break;
                     }
                 }
             }
 
+            // Fetch data failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
@@ -561,7 +567,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         marker = googleMap.addMarker(new MarkerOptions().position(marker.getPosition()).title("You're Here")
                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 11));
-        if (providerValueListener != null) {
+        if (providerValueListener != null) { // Remove the listener for get all ambulances
             userReference.removeEventListener(providerValueListener);
             Log.e("Dashboard", "Provider value event listener removed");
         }
@@ -575,6 +581,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         mainSheet.setVisibility(View.GONE);
 
         providerDetailValueListener = new ValueEventListener() {
+            // Fetch data success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 sheetProgress.setVisibility(View.GONE);
@@ -622,6 +629,7 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
                 }
             }
 
+            // Fetch data failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 userReference.removeEventListener(providerDetailValueListener);
@@ -662,6 +670,8 @@ public class Dashboard extends AppCompatActivity implements NavigationView.OnNav
         forBothCancelledAndCompleted();
     }
 
+
+    // If user selects any option from the menu, this function will be executed.
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();

@@ -39,12 +39,13 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
     private RecyclerView notifications;
     private User user;
     private List<Notification> Data;
-    private NotificationAdapter notificationAdapter;
+    private NotificationAdapter notificationAdapter; // Attach RecyclerView and Data to display all the items.
     private DatabaseReference reference = FirebaseDatabase.getInstance().getReference().child("Notifications");
     private DatabaseReference bookingReference = FirebaseDatabase.getInstance().getReference().child("Cases");
     private DatabaseReference userReference = FirebaseDatabase.getInstance().getReference().child("Users");
     private ValueEventListener notificationListener, bookingListener, userListener;
     private String orderBy;
+    // Case Detail Bottom Sheet Variables
     private BottomSheetBehavior sheetBehavior;
     private ProgressBar sheetProgress;
     private LinearLayout mainSheet;
@@ -66,6 +67,7 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
         notifications.setLayoutManager(new LinearLayoutManager(NotificationsActivity.this));
         notifications.setAdapter(notificationAdapter);
 
+        // Bottom Sheet initialization
         LinearLayout layoutBottomSheet = findViewById(R.id.bottom_sheet);
         sheetBehavior = BottomSheetBehavior.from(layoutBottomSheet);
         sheetBehavior.setHideable(true);
@@ -74,8 +76,8 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
 
         Button closeSheet = findViewById(R.id.closeSheet);
         closeSheet.setOnClickListener(this);
-        sheetProgress = findViewById(R.id.sheetProgress);
-        mainSheet = findViewById(R.id.mainSheet);
+        sheetProgress = findViewById(R.id.sheetProgress); // Loading bar, will be displayed until the data is not loaded.
+        mainSheet = findViewById(R.id.mainSheet); // Will be displayed when data is loaded.
 
         image = findViewById(R.id.image);
         about = findViewById(R.id.about);
@@ -87,10 +89,10 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
         address = findViewById(R.id.address);
         contact = findViewById(R.id.contact);
 
-
-        if (user.getType() == 0) {
+        // Check the user is customer or ambulance driver.
+        if (user.getType() == 0) { // it's customer.
             orderBy = "userId";
-        } else {
+        } else { // It's Driver
             orderBy = "driverId";
         }
 
@@ -101,17 +103,19 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
         loading.setVisibility(View.VISIBLE);
         noRecord.setVisibility(View.GONE);
         notifications.setVisibility(View.GONE);
+
         notificationListener = new ValueEventListener() {
+            // Fetch data success function
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Data.clear();
+                Data.clear(); // Remove data, to avoid duplication
                 for (DataSnapshot d : dataSnapshot.getChildren()) {
                     Notification n = d.getValue(Notification.class);
                     if (n != null) {
                         Data.add(n);
                     }
                 }
-                Collections.reverse(Data);
+                Collections.reverse(Data); // Reverse the data list, to display the latest notifcation on top.
 
                 if (Data.size() > 0) {
                     notifications.setVisibility(View.VISIBLE);
@@ -119,13 +123,12 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
                 } else {
                     noRecord.setVisibility(View.VISIBLE);
                     notifications.setVisibility(View.GONE);
-
                 }
 
                 loading.setVisibility(View.GONE);
                 notificationAdapter.setData(Data);
             }
-
+            // Fetch data failure function
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 loading.setVisibility(View.GONE);
@@ -133,29 +136,37 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
                 notifications.setVisibility(View.GONE);
             }
         };
-        reference.orderByChild(orderBy).equalTo(user.getPhone()).addValueEventListener(notificationListener);
 
+        reference
+                .orderByChild(orderBy) // Telling about the column, userId or driverId
+                .equalTo(user.getPhone()) // Telling about the value,
+                .addValueEventListener(notificationListener);
     }
 
     public void showBottomSheet(final Notification notification) {
         sheetBehavior.setHideable(false);
-        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-        sheetProgress.setVisibility(View.VISIBLE);
-        mainSheet.setVisibility(View.GONE);
+        sheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED); // Display the sheet.
+        sheetProgress.setVisibility(View.VISIBLE); // Loading bar inside the bottom sheet, will be visible until the user data is not loaded.
+        mainSheet.setVisibility(View.GONE); // The main view, holding all the views to display data.
 
-        if (user.getType() == 0) {
+        // Check the user is customer or ambulance driver.
+        if (user.getType() == 0) { // It's customer
             about.setText("Ambulance detail");
         } else {
             about.setText("Customer detail");
         }
 
+        // Loading detail of case.
         bookingListener = new ValueEventListener() {
+            // Data fetch success function.
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // Remove listener.
                 bookingReference.child(notification.getCaseId()).removeEventListener(bookingListener);
                 bookingReference.removeEventListener(bookingListener);
                 final Case booking = dataSnapshot.getValue(Case.class);
                 if (booking != null) {
+                    // Display data of case
                     sheetProgress.setVisibility(View.GONE);
                     mainSheet.setVisibility(View.VISIBLE);
                     date.setText(booking.getDate());
@@ -164,9 +175,12 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
                     type.setText(booking.getType());
                     status.setText(booking.getStatus());
 
+                    // Get the detail of customer or ambulance driver, using the userId or driverId.
                     userListener = new ValueEventListener() {
+                        // Data fetch success function
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            // Remove database listener.
                             if (user.getType() == 0) {
                                 userReference.child(booking.getDriverId()).removeEventListener(userListener);
                             } else {
@@ -175,6 +189,7 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
                             userReference.removeEventListener(userListener);
                             User tempUser = dataSnapshot.getValue(User.class);
                             if (tempUser != null) {
+                                // Display user data.
                                 if (tempUser.getImage() != null && tempUser.getImage().length() > 0) {
                                     Glide.with(NotificationsActivity.this).load(tempUser.getImage()).into(image);
                                 } else {
@@ -188,8 +203,10 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
                             }
                         }
 
+                        // Data fetch failure function
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
+                            // Remove database listener.
                             if (user.getType() == 0) {
                                 userReference.child(booking.getDriverId()).removeEventListener(userListener);
                             } else {
@@ -200,6 +217,7 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
                             mainSheet.setVisibility(View.VISIBLE);
                         }
                     };
+                    // Attach listener to fetch data.
                     if (user.getType() == 0) {
                         userReference.child(booking.getDriverId()).addValueEventListener(userListener);
                     } else {
@@ -208,11 +226,15 @@ public class NotificationsActivity extends AppCompatActivity implements View.OnC
                 }
             }
 
+            // Data fetch failure function.
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+                // Remove listener.
                 bookingReference.child(notification.getCaseId()).removeEventListener(bookingListener);
                 bookingReference.removeEventListener(bookingListener);
+                // Loading bar inside the bottom sheet, hide it, data loading failed.
                 sheetProgress.setVisibility(View.GONE);
+                // The main view, holding all the views to display data.
                 mainSheet.setVisibility(View.VISIBLE);
             }
         };
