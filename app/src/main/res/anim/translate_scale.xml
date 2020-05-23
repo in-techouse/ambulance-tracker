@@ -14,5 +14,5 @@
         android:fromYDelta="150%"
         android:toXDelta="0%"
         android:toYDelta="0%"
-        android:zAdjustment="top"/>
+        android:zAdjustment="top" />
 </set>
